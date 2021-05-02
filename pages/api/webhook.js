@@ -24,37 +24,33 @@ const endpointSecret = "whsec_9aQrl1xlIYPNzMQgbmJjfT5mp3dVVOc7";
 export default async (req, res) => {
   await runMiddleware(req, res, cors);
 
-  const { event } = req.body;
-
   if (endpointSecret) {
     // Get the signature sent by Stripe
-    const signature = req.headers["stripe-signature"];
     try {
-      event = stripe.webhooks.constructEvent(request.body, signature, endpointSecret);
+      const signature = req.headers["stripe-signature"];
+      const event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
+      switch (event.type) {
+        case "payment_intent.succeeded":
+          const paymentIntent = event.data.object;
+          console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+          // Then define and call a method to handle the successful payment intent.
+          // handlePaymentIntentSucceeded(paymentIntent);
+          break;
+        case "payment_method.attached":
+          const paymentMethod = event.data.object;
+          // Then define and call a method to handle the successful attachment of a PaymentMethod.
+          // handlePaymentMethodAttached(paymentMethod);
+          break;
+        default:
+          // Unexpected event type
+          console.log(`Unhandled event type ${event.type}.`);
+      }
+      res.status(200);
     } catch (err) {
       console.log(`⚠️  Webhook signature verification failed.`, err.message);
       res.status(400);
     }
   }
-
-  switch (event.type) {
-    case "payment_intent.succeeded":
-      const paymentIntent = event.data.object;
-      console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
-      // Then define and call a method to handle the successful payment intent.
-      // handlePaymentIntentSucceeded(paymentIntent);
-      break;
-    case "payment_method.attached":
-      const paymentMethod = event.data.object;
-      // Then define and call a method to handle the successful attachment of a PaymentMethod.
-      // handlePaymentMethodAttached(paymentMethod);
-      break;
-    default:
-      // Unexpected event type
-      console.log(`Unhandled event type ${event.type}.`);
-  }
-
-  res.status(200);
 
   // await db.collection("payment-intents").doc(checkoutId).update({
   //   complete: true,
