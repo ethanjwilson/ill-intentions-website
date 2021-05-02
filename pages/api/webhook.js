@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import Cors from "cors";
 import { buffer } from "micro";
+import { db } from "../../utils/firebaseAdmin";
 // Initializing the cors middleware
 const cors = Cors({
   methods: ["POST", "HEAD"],
@@ -18,7 +19,6 @@ function runMiddleware(req, res, fn) {
     });
   });
 }
-import { db } from "../../utils/firebaseAdmin";
 const stripe = require("stripe")("sk_test_51ImZPPGEn4WButGwGSHmHNfthMMCIY6WDp0Fyq7KLtwchYyQ1e1j4WsjU1G7SsoBv6WpF3OWxm34epz9Hlw7WaNV004F9kIBAN");
 const endpointSecret = "whsec_9aQrl1xlIYPNzMQgbmJjfT5mp3dVVOc7";
 
@@ -39,8 +39,14 @@ export default async (req, res) => {
         const event = stripe.webhooks.constructEvent(buf, signature, endpointSecret);
         switch (event.type) {
           case "payment_intent.succeeded":
-            const paymentIntent = event.data.object;
-            console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+            const { client_secret } = event.data.object;
+            const data = await db
+              .collection("payment-intents")
+              .where("clientSecret", "==", client_secret)
+              .get()
+              .then((doc) => doc.data());
+            console.log(data);
+            console.log(`PaymentIntent for ${paymentIntent.client_secret} was successful!`);
             // Then define and call a method to handle the successful payment intent.
             // handlePaymentIntentSucceeded(paymentIntent);
             break;
@@ -53,17 +59,16 @@ export default async (req, res) => {
             // Unexpected event type
             console.log(`Unhandled event type ${event.type}.`);
         }
-        res.status(200).end();
-      } catch (err) {
-        console.log(`⚠️  Webhook signature verification failed.`, err.message);
-        res.status(400).end();
+        res.status(200).send();
+        return;
+      } catch (error) {
+        console.log(`⚠️  Webhook signature verification failed.`, error.message);
+        res.status(400).send();
+        return;
       }
     }
   } else {
     res.setHeader("Allow", "POST");
     res.status(405).end("Method Not Allowed");
   }
-  // await db.collection("payment-intents").doc(checkoutId).update({
-  //   complete: true,
-  // });
 };
