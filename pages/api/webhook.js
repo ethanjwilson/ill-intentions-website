@@ -45,10 +45,10 @@ export default async (req, res) => {
           // Unexpected event type
           console.log(`Unhandled event type ${event.type}.`);
       }
-      res.status(200);
+      return res.status(200);
     } catch (err) {
       console.log(`⚠️  Webhook signature verification failed.`, err.message);
-      res.status(400);
+      return res.status(400);
     }
   }
 
