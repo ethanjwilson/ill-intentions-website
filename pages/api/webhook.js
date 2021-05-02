@@ -22,6 +22,12 @@ import { db } from "../../utils/firebaseAdmin";
 const stripe = require("stripe")("sk_test_51ImZPPGEn4WButGwGSHmHNfthMMCIY6WDp0Fyq7KLtwchYyQ1e1j4WsjU1G7SsoBv6WpF3OWxm34epz9Hlw7WaNV004F9kIBAN");
 const endpointSecret = "whsec_9aQrl1xlIYPNzMQgbmJjfT5mp3dVVOc7";
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async (req, res) => {
   await runMiddleware(req, res, cors);
 
@@ -47,10 +53,10 @@ export default async (req, res) => {
             // Unexpected event type
             console.log(`Unhandled event type ${event.type}.`);
         }
-        return res.status(200);
+        res.status(200).end();
       } catch (err) {
         console.log(`⚠️  Webhook signature verification failed.`, err.message);
-        return res.status(400);
+        res.status(400).end();
       }
     }
   } else {
@@ -60,10 +66,4 @@ export default async (req, res) => {
   // await db.collection("payment-intents").doc(checkoutId).update({
   //   complete: true,
   // });
-};
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
 };
