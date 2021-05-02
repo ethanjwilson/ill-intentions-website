@@ -30,7 +30,6 @@ export const config = {
 
 export default async (req, res) => {
   await runMiddleware(req, res, cors);
-
   if (req.method === "POST") {
     if (endpointSecret) {
       try {
@@ -44,7 +43,15 @@ export default async (req, res) => {
               .collection("payment-intents")
               .where("clientSecret", "==", client_secret)
               .get()
-              .then((doc) => doc.data());
+              .then((snap) => {
+                const tempArray = [];
+                snap.forEach((docRef) => {
+                  const doc = docRef.data();
+                  doc.id = docRef.id;
+                  tempArray.push(doc);
+                });
+                return tempArray[0];
+              });
             console.log(data);
             console.log(`PaymentIntent for ${paymentIntent.client_secret} was successful!`);
             // Then define and call a method to handle the successful payment intent.
