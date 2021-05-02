@@ -1,10 +1,13 @@
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
-import { Box, Button, Heading, Stack } from "@chakra-ui/react";
+import Image from "next/image";
+import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { db } from "../../utils/firebaseAdmin";
+import useSWR from "swr";
+import axios from "axios";
 
 const promise = loadStripe("pk_test_51ImZPPGEn4WButGw0oWggDjufEVo8LUw18VTPo2tdyUJxYkWXcVEcxLu3ZDF5F9VPzyUYHVVLeNFVdNNMhZEfaog00i0pNVWRT");
 
@@ -79,13 +82,28 @@ const PaymentForm = ({ clientSecret }) => {
   );
 };
 
+const fetcher = (url) => axios.get(url).then(({ data }) => data);
+
+const imageLoader = ({ src, width }) =>
+  `https://firebasestorage.googleapis.com/v0/b/ill-intentions.appspot.com/o/webp%2F${width}px%2F${src}?alt=media&token=121eebf5-b318-4705-8bbf-9e80e597f231`;
+
 const Checkout = ({ data }) => {
-  const { clientSecret } = data;
+  const { clientSecret, itemId } = data;
+  const { data: item } = useSWR(`/api/items/${itemId}`, fetcher);
   return (
     <Box>
       <Stack my={8}>
         <Heading textAlign="center">Checkout</Heading>
       </Stack>
+
+      {item && (
+        <Stack maxW={480} mx="auto" bg="gray.100" my={4} spacing={4} p={4}>
+          <Text>{item.name}</Text>
+          <Text>${item.price / 100}</Text>
+          <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+        </Stack>
+      )}
+
       <Stack>
         <Elements stripe={promise}>
           <PaymentForm clientSecret={clientSecret} />

@@ -26,7 +26,5 @@ export default async (req, res) => {
     clientSecret: paymentIntent.client_secret,
   });
 
-  res.status(201).send({
-    checkoutId,
-  });
+  res.status(201).json({ checkoutId });
 };

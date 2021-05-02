@@ -8,7 +8,6 @@ const Item = ({ data: { itemId, name } }) => {
   const router = useRouter();
   const handleCheckout = async () => {
     const { data } = await axios.post("/api/create-payment-intent", { itemId });
-    console.log(data);
     router.push(`/checkout/${data.checkoutId}`);
   };
   return (
