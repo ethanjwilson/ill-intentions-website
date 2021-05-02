@@ -19,6 +19,7 @@ function runMiddleware(req, res, fn) {
 }
 import { db } from "../../utils/firebaseAdmin";
 const stripe = require("stripe")("sk_test_51ImZPPGEn4WButGwGSHmHNfthMMCIY6WDp0Fyq7KLtwchYyQ1e1j4WsjU1G7SsoBv6WpF3OWxm34epz9Hlw7WaNV004F9kIBAN");
+const endpointSecret = "whsec_9aQrl1xlIYPNzMQgbmJjfT5mp3dVVOc7";
 
 export default async (req, res) => {
   await runMiddleware(req, res, cors);
@@ -53,7 +54,9 @@ export default async (req, res) => {
       console.log(`Unhandled event type ${event.type}.`);
   }
 
-  await db.collection("payment-intents").doc(checkoutId).update({
-    complete: true,
-  });
+  res.status(200);
+
+  // await db.collection("payment-intents").doc(checkoutId).update({
+  //   complete: true,
+  // });
 };
