@@ -33,7 +33,7 @@ export default async (req, res) => {
       event = stripe.webhooks.constructEvent(request.body, signature, endpointSecret);
     } catch (err) {
       console.log(`⚠️  Webhook signature verification failed.`, err.message);
-      return res.sendStatus(400);
+      res.status(400);
     }
   }
 
@@ -54,7 +54,7 @@ export default async (req, res) => {
       console.log(`Unhandled event type ${event.type}.`);
   }
 
-  res.sendStatus(200);
+  res.status(200);
 
   // await db.collection("payment-intents").doc(checkoutId).update({
   //   complete: true,
