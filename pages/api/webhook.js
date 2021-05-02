@@ -38,7 +38,7 @@ export default async (req, res) => {
         const event = stripe.webhooks.constructEvent(buf, signature, endpointSecret);
         switch (event.type) {
           case "payment_intent.succeeded":
-            const { client_secret } = event.data.object;
+            const { client_secret, id } = event.data.object;
             const data = await db
               .collection("payment-intents")
               .where("clientSecret", "==", client_secret)
@@ -52,10 +52,16 @@ export default async (req, res) => {
                 });
                 return tempArray[0];
               });
-            console.log(data);
-            console.log(`PaymentIntent for ${paymentIntent.client_secret} was successful!`);
-            // Then define and call a method to handle the successful payment intent.
-            // handlePaymentIntentSucceeded(paymentIntent);
+            db.collection("payment-intents").doc(data.id).update({
+              complete: true,
+            });
+            db.collection("purchases").add({
+              paymentIntentId: id,
+              createdAt: new Date().toISOString(),
+              itemId: data.itemId,
+              size: data.size,
+              clientSecret: client_secret,
+            });
             break;
           case "payment_method.attached":
             const paymentMethod = event.data.object;
