@@ -28,12 +28,12 @@ export default async (req, res) => {
 
   if (endpointSecret) {
     // Get the signature sent by Stripe
-    const signature = request.headers["stripe-signature"];
+    const signature = req.headers["stripe-signature"];
     try {
       event = stripe.webhooks.constructEvent(request.body, signature, endpointSecret);
     } catch (err) {
       console.log(`⚠️  Webhook signature verification failed.`, err.message);
-      return response.sendStatus(400);
+      return res.sendStatus(400);
     }
   }
 
@@ -54,7 +54,7 @@ export default async (req, res) => {
       console.log(`Unhandled event type ${event.type}.`);
   }
 
-  res.status(200);
+  res.sendStatus(200);
 
   // await db.collection("payment-intents").doc(checkoutId).update({
   //   complete: true,
