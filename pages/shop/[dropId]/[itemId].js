@@ -1,11 +1,21 @@
-import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Heading, Stack } from "@chakra-ui/react";
+import axios from "axios";
 import { db } from "../../../utils/firebaseAdmin";
 
-const Item = ({ data }) => {
+import { useRouter } from "next/router";
+
+const Item = ({ data: { itemId, name } }) => {
+  const router = useRouter();
+  const handleCheckout = async () => {
+    const { data } = await axios.post("/api/create-payment-intent", { itemId });
+    console.log(data);
+    router.push(`/checkout/${data.checkoutId}`);
+  };
   return (
     <Box>
       <Stack>
-        <Heading>{data.name}</Heading>
+        <Heading>{name}</Heading>
+        <Button onClick={handleCheckout}>Go To Checkout</Button>
       </Stack>
       <Stack>
         {/* {items &&

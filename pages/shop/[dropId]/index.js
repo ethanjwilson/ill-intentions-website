@@ -1,7 +1,7 @@
 import axios from "axios";
 import useSWR from "swr";
 import NextLink from "next/link";
-import { Box, Button, Heading, Link, Stack, Text } from "@chakra-ui/react";
+import { Box, Heading, Link, Stack, Text } from "@chakra-ui/react";
 import { db } from "../../../utils/firebaseAdmin";
 
 const fetcher = (url, dropId) => axios.post(url, { dropId }).then((res) => res.data);
