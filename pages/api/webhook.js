@@ -60,7 +60,7 @@ export default async (req, res) => {
               createdAt: new Date().toISOString(),
               itemId: data.itemId,
               size: data.size,
-              price: data.price,
+              chargeAmount: data.price,
             });
             break;
           case "payment_method.attached":

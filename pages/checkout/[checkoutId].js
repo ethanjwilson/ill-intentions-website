@@ -1,6 +1,8 @@
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
+import { useRouter } from "next/router";
+
 import Image from "next/image";
 import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -12,6 +14,7 @@ import axios from "axios";
 const promise = loadStripe("pk_test_51ImZPPGEn4WButGw0oWggDjufEVo8LUw18VTPo2tdyUJxYkWXcVEcxLu3ZDF5F9VPzyUYHVVLeNFVdNNMhZEfaog00i0pNVWRT");
 
 const PaymentForm = ({ checkoutId }) => {
+  const router = useRouter();
   const [succeeded, setSucceeded] = useState(false);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState("");
@@ -59,9 +62,11 @@ const PaymentForm = ({ checkoutId }) => {
       setError(`Payment failed ${payload.error.message}`);
       setProcessing(false);
     } else {
+      await axios.post("/api/stripe/end-checkout-session", { checkoutId });
       setError(null);
       setProcessing(false);
       setSucceeded(true);
+      router.reload();
     }
   };
   return (
@@ -94,14 +99,28 @@ const imageLoader = ({ src, width }) =>
 
 const Checkout = ({ data }) => {
   const [priceSet, setPriceSet] = useState(false);
-  const { itemId, checkoutId } = data;
+  const { itemId, checkoutId, complete } = data;
   const { data: item } = useSWR(`/api/items/${itemId}`, fetcher);
 
   const handleStartPayment = () => {
     axios.post("/api/stripe/update-checkout-session", { itemId, checkoutId, shipping: "nz" }).then(() => setPriceSet(true));
   };
 
-  return (
+  return complete ? (
+    <Box>
+      <Stack my={8}>
+        <Heading textAlign="center">Thank you for your purchase</Heading>
+      </Stack>
+
+      {item && (
+        <Stack maxW={480} mx="auto" bg="gray.100" my={4} spacing={4} p={4}>
+          <Text>{item.name}</Text>
+          <Text>${item.price / 100}</Text>
+          <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+        </Stack>
+      )}
+    </Box>
+  ) : (
     <Box>
       <Stack my={8}>
         <Heading textAlign="center">Checkout</Heading>
