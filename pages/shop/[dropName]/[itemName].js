@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 const Item = ({ data: { itemId, name } }) => {
   const router = useRouter();
   const handleCheckout = async () => {
-    const { data } = await axios.post("/api/create-payment-intent", { itemId });
+    const { data } = await axios.post("/api/stripe/create-checkout-session", { itemId });
     router.push(`/checkout/${data.checkoutId}`);
   };
   return (

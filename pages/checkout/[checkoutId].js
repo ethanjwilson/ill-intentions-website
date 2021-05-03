@@ -3,7 +3,7 @@ import { Elements } from "@stripe/react-stripe-js";
 
 import Image from "next/image";
 import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { db } from "../../utils/firebaseAdmin";
 import useSWR from "swr";
@@ -11,13 +11,18 @@ import axios from "axios";
 
 const promise = loadStripe("pk_test_51ImZPPGEn4WButGw0oWggDjufEVo8LUw18VTPo2tdyUJxYkWXcVEcxLu3ZDF5F9VPzyUYHVVLeNFVdNNMhZEfaog00i0pNVWRT");
 
-const PaymentForm = ({ clientSecret }) => {
+const PaymentForm = ({ checkoutId }) => {
   const [succeeded, setSucceeded] = useState(false);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState("");
   const [disabled, setDisabled] = useState(true);
+  const [clientSecret, setClientSecret] = useState("");
   const stripe = useStripe();
   const elements = useElements();
+
+  useEffect(() => {
+    axios.post("/api/stripe/create-payment-intent", { checkoutId }).then(({ data }) => setClientSecret(data.clientSecret));
+  }, []);
 
   const cardStyle = {
     style: {
@@ -88,8 +93,14 @@ const imageLoader = ({ src, width }) =>
   `https://firebasestorage.googleapis.com/v0/b/ill-intentions.appspot.com/o/webp%2F${width}px%2F${src}?alt=media&token=121eebf5-b318-4705-8bbf-9e80e597f231`;
 
 const Checkout = ({ data }) => {
-  const { clientSecret, itemId } = data;
+  const [priceSet, setPriceSet] = useState(false);
+  const { itemId, checkoutId } = data;
   const { data: item } = useSWR(`/api/items/${itemId}`, fetcher);
+
+  const handleStartPayment = () => {
+    axios.post("/api/stripe/update-checkout-session", { itemId, checkoutId, shipping: "nz" }).then(() => setPriceSet(true));
+  };
+
   return (
     <Box>
       <Stack my={8}>
@@ -101,13 +112,14 @@ const Checkout = ({ data }) => {
           <Text>{item.name}</Text>
           <Text>${item.price / 100}</Text>
           <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+          <Button colorScheme="blue" onClick={handleStartPayment}>
+            Go to payment
+          </Button>
         </Stack>
       )}
 
       <Stack>
-        <Elements stripe={promise}>
-          <PaymentForm clientSecret={clientSecret} />
-        </Elements>
+        <Elements stripe={promise}>{priceSet && <PaymentForm checkoutId={checkoutId} />}</Elements>
       </Stack>
     </Box>
   );
@@ -116,7 +128,7 @@ const Checkout = ({ data }) => {
 export const getServerSideProps = async (context) => {
   const checkoutId = context.params.checkoutId;
   const data = await db
-    .collection("payment-intents")
+    .collection("checkoutSessions")
     .doc(checkoutId)
     .get()
     .then((doc) => doc.data());
@@ -127,7 +139,7 @@ export const getServerSideProps = async (context) => {
   }
 
   return {
-    props: { data },
+    props: { data: { ...data, checkoutId } },
   };
 };
 

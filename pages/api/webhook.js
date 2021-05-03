@@ -38,10 +38,10 @@ export default async (req, res) => {
         const event = stripe.webhooks.constructEvent(buf, signature, endpointSecret);
         switch (event.type) {
           case "payment_intent.succeeded":
-            const { client_secret, id } = event.data.object;
+            const { id } = event.data.object;
             const data = await db
-              .collection("payment-intents")
-              .where("clientSecret", "==", client_secret)
+              .collection("checkoutSessions")
+              .where("paymentIntentId", "==", id)
               .get()
               .then((snap) => {
                 const tempArray = [];
@@ -52,15 +52,15 @@ export default async (req, res) => {
                 });
                 return tempArray[0];
               });
-            db.collection("payment-intents").doc(data.id).update({
+            db.collection("checkoutSessions").doc(data.id).update({
               complete: true,
             });
-            db.collection("purchases").add({
+            db.collection("sales").add({
               paymentIntentId: id,
               createdAt: new Date().toISOString(),
               itemId: data.itemId,
               size: data.size,
-              clientSecret: client_secret,
+              price: data.price,
             });
             break;
           case "payment_method.attached":
