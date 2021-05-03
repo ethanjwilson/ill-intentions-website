@@ -18,7 +18,7 @@ export default async (req, res) => {
     await db.collection("checkoutSessions").doc(checkoutId).update({
       paymentIntentId: paymentIntent.id,
     });
-    res.status(201).json({ clientSecret: paymentIntent.id });
+    res.status(201).json({ clientSecret: paymentIntent.client_secret });
   } else {
     res.status(401);
   }
