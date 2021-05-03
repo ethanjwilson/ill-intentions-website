@@ -15,6 +15,7 @@
     "@stripe/stripe-js": "^1.14.0",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
+    "dashify": "^2.0.0",
     "firebase-admin": "^9.7.0",
     "framer-motion": "^4",
     "micro": "^9.3.4",

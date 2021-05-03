@@ -5,7 +5,7 @@ const index = () => {
   return (
     <Box>
       <Heading>Ill Intentions</Heading>
-      <NextLink passHref href={`/shop/HIbrGSd9r7FmwkO6Hg2w`}>
+      <NextLink passHref href={`/shop/vengeance`}>
         <Link>
           <Button>Vengeance</Button>
         </Link>

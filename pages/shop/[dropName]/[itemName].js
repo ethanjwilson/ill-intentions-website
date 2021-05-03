@@ -31,12 +31,20 @@ const Item = ({ data: { itemId, name } }) => {
 };
 
 export const getServerSideProps = async (context) => {
-  const itemId = context.params.itemId;
+  const itemName = context.params.itemName;
   const data = await db
     .collection("items")
-    .doc(itemId)
+    .where("nameDashified", "==", itemName)
     .get()
-    .then((doc) => doc.data());
+    .then((snap) => {
+      const tempArray = [];
+      snap.forEach((docRef) => {
+        const doc = docRef.data();
+        doc.itemId = docRef.id;
+        tempArray.push(doc);
+      });
+      return tempArray[0];
+    });
   if (!data) {
     console.log("Drop unavailable or not found");
     context.res.writeHead(302, { location: "/" });
@@ -48,7 +56,7 @@ export const getServerSideProps = async (context) => {
   // delete data.available;
 
   return {
-    props: { data: { ...data, itemId } },
+    props: { data },
   };
 };
 
