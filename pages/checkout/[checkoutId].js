@@ -2,6 +2,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
 import { useRouter } from "next/router";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 import Image from "next/image";
 import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
@@ -10,6 +11,10 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { db } from "../../utils/firebaseAdmin";
 import useSWR from "swr";
 import axios from "axios";
+import { FormProvider, useForm } from "react-hook-form";
+import CheckoutForm from "../../components/checkout/CheckoutForm";
+import CheckoutShell from "../../components/checkout/CheckoutShell";
+import checkoutFormScheme from "../../schemas/checkoutFormSchema";
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
@@ -70,10 +75,10 @@ const PaymentForm = ({ checkoutId }) => {
     }
   };
   return (
-    <Box borderRadius="lg" bg="gray.100" w={480} mx="auto" p={8}>
-      <form id="payment-form" onSubmit={handleSubmit}>
+    <Box borderRadius="lg" bg="white" p={8}>
+      <form id="payment-form">
         <CardElement id="card-element" options={cardStyle} onChange={handleChange} />
-        <Button colorScheme="blue" mt={8} isLoading={processing} disabled={processing || disabled || succeeded} type="submit">
+        <Button colorScheme="blue" mt={8} isLoading={processing} disabled={processing || disabled || succeeded} onClick={handleSubmit}>
           Pay Now
         </Button>
         {/* Show any error that happens when processing the payment */}
@@ -102,8 +107,18 @@ const Checkout = ({ data }) => {
   const { itemId, checkoutId, complete } = data;
   const { data: item } = useSWR(`/api/items/${itemId}`, fetcher);
 
-  const handleStartPayment = () => {
-    axios.post("/api/stripe/update-checkout-session", { itemId, checkoutId, shipping: "nz" }).then(() => setPriceSet(true));
+  const methods = useForm({
+    mode: "all",
+    reValidateMode: "onChange",
+    resolver: yupResolver(checkoutFormScheme),
+  });
+  const {
+    formState: { isDirty, isValid },
+  } = methods;
+  const onSubmit = (data) => {
+    axios
+      .post("/api/stripe/update-checkout-session", { itemId, checkoutId, firstName: data.firstName, lastName: data.lastName, shipping: data.isShipped ? data.country : false })
+      .then(() => setPriceSet(true));
   };
 
   return complete ? (
@@ -114,33 +129,53 @@ const Checkout = ({ data }) => {
 
       {item && (
         <Stack maxW={480} mx="auto" bg="gray.100" my={4} spacing={4} p={4}>
-          <Text>{item.name}</Text>
-          <Text>${item.price / 100}</Text>
+          <Box>
+            <Text fontSize="lg" fontWeight="bold">
+              {item.name}
+            </Text>
+            <Text>${item.price / 100}</Text>
+          </Box>
           <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
         </Stack>
       )}
     </Box>
   ) : (
-    <Box>
-      <Stack my={8}>
-        <Heading textAlign="center">Checkout</Heading>
-      </Stack>
-
-      {item && (
-        <Stack maxW={480} mx="auto" bg="gray.100" my={4} spacing={4} p={4}>
-          <Text>{item.name}</Text>
-          <Text>${item.price / 100}</Text>
-          <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
-          <Button colorScheme="blue" onClick={handleStartPayment}>
-            Go to payment
-          </Button>
-        </Stack>
-      )}
-
-      <Stack>
-        <Elements stripe={promise}>{priceSet && <PaymentForm checkoutId={checkoutId} />}</Elements>
-      </Stack>
-    </Box>
+    <>
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <CheckoutShell>
+            <Stack>
+              <Heading mb={4}>Checkout</Heading>
+              {priceSet ? (
+                <Stack>
+                  <Elements stripe={promise}>
+                    <PaymentForm checkoutId={checkoutId} />
+                  </Elements>
+                </Stack>
+              ) : (
+                <CheckoutForm />
+              )}
+            </Stack>
+            <Box>
+              {item && (
+                <Stack bg="white" spacing={4} p={4} borderRadius="lg">
+                  <Box>
+                    <Text fontSize="lg" fontWeight="bold">
+                      {item.name}
+                    </Text>
+                    <Text>${item.price / 100}</Text>
+                  </Box>
+                  <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+                  <Button colorScheme="blue" type="submit" disabled={!isDirty || !isValid || priceSet}>
+                    Continue to payment
+                  </Button>
+                </Stack>
+              )}
+            </Box>
+          </CheckoutShell>
+        </form>
+      </FormProvider>
+    </>
   );
 };
 
