@@ -11,7 +11,7 @@ import { db } from "../../utils/firebaseAdmin";
 import useSWR from "swr";
 import axios from "axios";
 
-const promise = loadStripe("pk_test_51ImZPPGEn4WButGw0oWggDjufEVo8LUw18VTPo2tdyUJxYkWXcVEcxLu3ZDF5F9VPzyUYHVVLeNFVdNNMhZEfaog00i0pNVWRT");
+const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 const PaymentForm = ({ checkoutId }) => {
   const router = useRouter();

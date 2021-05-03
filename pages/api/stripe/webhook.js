@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import Cors from "cors";
 import { buffer } from "micro";
-import { db } from "../../utils/firebaseAdmin";
+import { db } from "../../../utils/firebaseAdmin";
 // Initializing the cors middleware
 const cors = Cors({
   methods: ["POST", "HEAD"],
@@ -19,8 +19,8 @@ function runMiddleware(req, res, fn) {
     });
   });
 }
-const stripe = require("stripe")("sk_test_51ImZPPGEn4WButGwGSHmHNfthMMCIY6WDp0Fyq7KLtwchYyQ1e1j4WsjU1G7SsoBv6WpF3OWxm34epz9Hlw7WaNV004F9kIBAN");
-const endpointSecret = "whsec_9aQrl1xlIYPNzMQgbmJjfT5mp3dVVOc7";
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
 export const config = {
   api: {
