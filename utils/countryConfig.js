@@ -5,22 +5,21 @@ export const countryConfig = {
     codePlaceholder: "Post Code",
     areaPlaceholder: "Select Region",
     areaOptions: [
-      {
-        name: "Wellington",
-        value: "wellington",
-      },
-      {
-        name: "Auckland",
-        value: "auckland",
-      },
-      {
-        name: "Christchurch",
-        value: "Christchurch",
-      },
-      {
-        name: "Northland",
-        value: "northland",
-      },
+      { name: "Auckland - Tāmaki-makau-rau" },
+      { name: "Waikato" },
+      { name: "Bay of Plenty - Te Moana-a-Toi" },
+      { name: "Gisborne - Te Tai Rāwhiti" },
+      { name: "Hawke's Bay - Te Matau-a-Māui" },
+      { name: "Taranaki" },
+      { name: "Manawatū-Whanganui" },
+      { name: "Wellington - Te Whanga-nui-a-Tara" },
+      { name: "Tasman - Te Tai-o-Aorere" },
+      { name: "Nelson - Whakatū" },
+      { name: "Marlborough - Te Tauihu-o-te-waka" },
+      { name: "West Coast - Te Tai Poutini" },
+      { name: "Canterbury - Waitaha" },
+      { name: "Otago - Ōtākou" },
+      { name: "Southland - Murihiku" },
     ],
   },
   aus: {
