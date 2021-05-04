@@ -14,7 +14,7 @@ const ShippingForm = () => {
     if (!showShipping) {
       unregister(["address", "city", "code", "area"]);
     }
-    if (country !== currentCountry) {
+    if (showShipping && country !== currentCountry) {
       setValue("address", "", { shouldValidate: true });
       setValue("city", "", { shouldValidate: true });
       setValue("code", "", { shouldValidate: true });
