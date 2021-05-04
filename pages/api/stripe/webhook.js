@@ -60,13 +60,14 @@ export default async (req, res) => {
             // TODO
             // Decreament Stock
 
+            const { customer, size, itemId } = data;
             db.collection("sales").add({
               paymentIntentId: id,
               createdAt: new Date().toISOString(),
-              itemId: data.itemId,
-              size: data.size,
+              itemId,
+              size,
               chargeAmount: data.price,
-              customer: data.customer,
+              customer,
             });
             break;
           default:
