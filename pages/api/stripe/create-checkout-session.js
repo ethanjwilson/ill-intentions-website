@@ -3,7 +3,7 @@ import { v4 as uuid } from "uuid";
 import { db } from "../../../utils/firebaseAdmin";
 
 export default async (req, res) => {
-  const { itemId, size = "l" } = req.body;
+  const { itemId, size } = req.body;
   const checkoutId = uuid();
 
   await db.collection("checkoutSessions").doc(checkoutId).set({

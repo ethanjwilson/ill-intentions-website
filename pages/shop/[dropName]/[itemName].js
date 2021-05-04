@@ -1,30 +1,38 @@
-import { Box, Button, Heading, Stack } from "@chakra-ui/react";
+import { Box, Button, Heading, Select, Stack } from "@chakra-ui/react";
 import axios from "axios";
 import { db } from "../../../utils/firebaseAdmin";
 
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { imageLoader } from "../../../utils/imageLoader";
+import Image from "next/image";
 
-const Item = ({ data: { itemId, name } }) => {
+const Item = ({ data: { itemId, name, stock, images } }) => {
+  const [size, setSize] = useState("");
   const router = useRouter();
   const handleCheckout = async () => {
-    const { data } = await axios.post("/api/stripe/create-checkout-session", { itemId });
-    router.push(`/checkout/${data.checkoutId}`);
+    if (Object.keys(stock).includes(size)) {
+      const { data } = await axios.post("/api/stripe/create-checkout-session", { itemId, size });
+      router.push(`/checkout/${data.checkoutId}`);
+    }
   };
   return (
     <Box>
-      <Stack>
-        <Heading>{name}</Heading>
-        <Button onClick={handleCheckout}>Go To Checkout</Button>
+      <Stack my="8">
+        <Heading textAlign="center" fontSize="8xl">
+          {name}
+        </Heading>
       </Stack>
-      <Stack>
-        {/* {items &&
-          items.map((item, key) => (
-            <Link key={key} href={`${item.id}`}>
-              <Box>
-                <Text>{item.name}</Text>
-              </Box>
-            </Link>
-          ))} */}
+      <Stack my={4} maxW={500} mx="auto">
+        <Image priority loader={imageLoader} src={`${images[0]}.webp`} alt={`Picture of ${name}`} width={500} height={500} />
+        <Select onChange={({ target }) => setSize(target.value)} placeholder="Select Size">
+          {Object.keys(stock).map((key, idx) => (
+            <option key={idx} value={key}>
+              {stock[key] > 0 ? `${key.toUpperCase()} - ${stock[key]} in stock` : "Not in stock"}
+            </option>
+          ))}
+        </Select>
+        <Button onClick={handleCheckout}>Go To Checkout</Button>
       </Stack>
     </Box>
   );

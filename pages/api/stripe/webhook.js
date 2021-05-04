@@ -52,21 +52,23 @@ export default async (req, res) => {
                 });
                 return tempArray[0];
               });
+
             db.collection("checkoutSessions").doc(data.id).update({
               complete: true,
             });
+
+            // TODO
+            // Decreament Stock
+
+            const { customer, size, itemId } = data;
             db.collection("sales").add({
               paymentIntentId: id,
               createdAt: new Date().toISOString(),
-              itemId: data.itemId,
-              size: data.size,
+              itemId,
+              size,
               chargeAmount: data.price,
+              customer,
             });
-            break;
-          case "payment_method.attached":
-            const paymentMethod = event.data.object;
-            // Then define and call a method to handle the successful attachment of a PaymentMethod.
-            // handlePaymentMethodAttached(paymentMethod);
             break;
           default:
             // Unexpected event type

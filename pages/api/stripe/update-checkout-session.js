@@ -3,7 +3,7 @@ import { v4 as uuid } from "uuid";
 import { db } from "../../../utils/firebaseAdmin";
 
 export default async (req, res) => {
-  const { checkoutId, itemId, shipping = null } = req.body;
+  const { checkoutId, itemId, country, customer } = req.body;
 
   const item = await db
     .collection("items")
@@ -11,17 +11,14 @@ export default async (req, res) => {
     .get()
     .then((doc) => doc.data());
 
-  let shippingCost = 0;
-  if (shipping) {
-    shippingCost = item?.shipping[shipping];
-  }
-
+  let shippingCost = item?.shipping[country] ?? 0;
   const price = shippingCost ? item.price + shippingCost : item.price;
 
   await db.collection("checkoutSessions").doc(checkoutId).update({
     complete: false,
     priceSet: true,
     price,
+    customer,
   });
 
   res.status(200).send();

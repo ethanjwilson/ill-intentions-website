@@ -2,6 +2,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
 import { useRouter } from "next/router";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 import Image from "next/image";
 import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
@@ -10,16 +11,20 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { db } from "../../utils/firebaseAdmin";
 import useSWR from "swr";
 import axios from "axios";
+import { FormProvider, useForm } from "react-hook-form";
+import CheckoutForm from "../../components/checkout/CheckoutForm";
+import CheckoutShell from "../../components/checkout/CheckoutShell";
+import checkoutFormScheme from "../../schemas/checkoutFormSchema";
+import { imageLoader } from "../../utils/imageLoader";
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
-const PaymentForm = ({ checkoutId }) => {
+const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }) => {
   const router = useRouter();
   const [succeeded, setSucceeded] = useState(false);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState("");
   const [disabled, setDisabled] = useState(true);
-  const [clientSecret, setClientSecret] = useState("");
   const stripe = useStripe();
   const elements = useElements();
 
@@ -28,6 +33,7 @@ const PaymentForm = ({ checkoutId }) => {
   }, []);
 
   const cardStyle = {
+    hidePostalCode: true,
     style: {
       base: {
         color: "#32325d",
@@ -54,6 +60,7 @@ const PaymentForm = ({ checkoutId }) => {
     e.preventDefault();
     setProcessing(true);
     const payload = await stripe.confirmCardPayment(clientSecret, {
+      receipt_email: email,
       payment_method: {
         card: elements.getElement(CardElement),
       },
@@ -70,10 +77,10 @@ const PaymentForm = ({ checkoutId }) => {
     }
   };
   return (
-    <Box borderRadius="lg" bg="gray.100" w={480} mx="auto" p={8}>
-      <form id="payment-form" onSubmit={handleSubmit}>
+    <Box borderRadius="lg" bg="white" p={8}>
+      <form id="payment-form">
         <CardElement id="card-element" options={cardStyle} onChange={handleChange} />
-        <Button colorScheme="blue" mt={8} isLoading={processing} disabled={processing || disabled || succeeded} type="submit">
+        <Button colorScheme="blue" mt={8} isLoading={processing} disabled={processing || disabled || succeeded} onClick={handleSubmit}>
           Pay Now
         </Button>
         {/* Show any error that happens when processing the payment */}
@@ -94,53 +101,112 @@ const PaymentForm = ({ checkoutId }) => {
 
 const fetcher = (url) => axios.get(url).then(({ data }) => data);
 
-const imageLoader = ({ src, width }) =>
-  `https://firebasestorage.googleapis.com/v0/b/ill-intentions.appspot.com/o/webp%2F${width}px%2F${src}?alt=media&token=121eebf5-b318-4705-8bbf-9e80e597f231`;
-
 const Checkout = ({ data }) => {
-  const [priceSet, setPriceSet] = useState(false);
-  const { itemId, checkoutId, complete } = data;
+  const [priceSet, setPriceSet] = useState(data?.clientSecret ? true : false);
+  const [clientSecret, setClientSecret] = useState(data?.clientSecret ?? "");
+  const [email, setEmail] = useState(data?.customer?.email ?? "");
+  const { itemId, checkoutId, complete, size } = data;
   const { data: item } = useSWR(`/api/items/${itemId}`, fetcher);
 
-  const handleStartPayment = () => {
-    axios.post("/api/stripe/update-checkout-session", { itemId, checkoutId, shipping: "nz" }).then(() => setPriceSet(true));
+  const methods = useForm({
+    mode: "all",
+    reValidateMode: "onChange",
+    resolver: yupResolver(checkoutFormScheme),
+  });
+  const {
+    formState: { isDirty, isValid },
+  } = methods;
+  const onSubmit = (data) => {
+    const shippingAddress = data.isShipped
+      ? {
+          streetAddress: data.address,
+          city: data.city,
+          code: data.code,
+          area: data.area,
+          country: data.country,
+        }
+      : false;
+    axios
+      .post("/api/stripe/update-checkout-session", {
+        itemId,
+        checkoutId,
+        customer: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          shippingAddress,
+        },
+        country: data.isShipped ? data.country : false,
+      })
+      .then(() => {
+        setPriceSet(true);
+        setEmail(data.email);
+      });
   };
 
   return complete ? (
-    <Box>
-      <Stack my={8}>
+    <Box bg="gray.100" minH="100vh">
+      <Stack py={8}>
         <Heading textAlign="center">Thank you for your purchase</Heading>
       </Stack>
 
       {item && (
-        <Stack maxW={480} mx="auto" bg="gray.100" my={4} spacing={4} p={4}>
-          <Text>{item.name}</Text>
-          <Text>${item.price / 100}</Text>
-          <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+        <Stack maxW={480} mx="auto" bg="white" spacing={4} p={4} borderRadius="lg">
+          <Stack>
+            <Box>
+              <Text fontSize="lg" fontWeight="bold">
+                {item.name}
+              </Text>
+              <Stack direction="row">
+                <Text>${item.price / 100}</Text>
+                <Text>Size: {size.toUpperCase()}</Text>
+              </Stack>
+            </Box>
+            <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+          </Stack>
         </Stack>
       )}
     </Box>
   ) : (
-    <Box>
-      <Stack my={8}>
-        <Heading textAlign="center">Checkout</Heading>
-      </Stack>
-
-      {item && (
-        <Stack maxW={480} mx="auto" bg="gray.100" my={4} spacing={4} p={4}>
-          <Text>{item.name}</Text>
-          <Text>${item.price / 100}</Text>
-          <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
-          <Button colorScheme="blue" onClick={handleStartPayment}>
-            Go to payment
-          </Button>
-        </Stack>
-      )}
-
-      <Stack>
-        <Elements stripe={promise}>{priceSet && <PaymentForm checkoutId={checkoutId} />}</Elements>
-      </Stack>
-    </Box>
+    <>
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <CheckoutShell>
+            <Stack>
+              <Heading mb={4}>Checkout</Heading>
+              {priceSet ? (
+                <Stack>
+                  <Elements stripe={promise}>
+                    <PaymentForm email={email} clientSecret={clientSecret} setClientSecret={setClientSecret} checkoutId={checkoutId} />
+                  </Elements>
+                </Stack>
+              ) : (
+                <CheckoutForm />
+              )}
+            </Stack>
+            <Box>
+              {item && (
+                <Stack bg="white" spacing={4} p={4} borderRadius="lg">
+                  <Box>
+                    <Text fontSize="lg" fontWeight="bold">
+                      {item.name}
+                    </Text>
+                    <Stack direction="row">
+                      <Text>${item.price / 100}</Text>
+                      <Text>Size: {size.toUpperCase()}</Text>
+                    </Stack>
+                  </Box>
+                  <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+                  <Button colorScheme="blue" type="submit" disabled={!isDirty || !isValid || priceSet}>
+                    Continue to payment
+                  </Button>
+                </Stack>
+              )}
+            </Box>
+          </CheckoutShell>
+        </form>
+      </FormProvider>
+    </>
   );
 };
 
