@@ -1,8 +1,10 @@
 import axios from "axios";
 import useSWR from "swr";
 import NextLink from "next/link";
-import { Box, Heading, Link, Skeleton, Stack, Text } from "@chakra-ui/react";
+import Image from "next/image";
+import { Box, Grid, Heading, Link, Skeleton, Stack, Text } from "@chakra-ui/react";
 import { db } from "../../../utils/firebaseAdmin";
+import { imageLoader } from "../../../utils/imageLoader";
 
 const fetcher = (url, dropId) => axios.post(url, { dropId }).then(({ data }) => data);
 
@@ -11,17 +13,22 @@ const Shop = ({ data: dropData }) => {
   const { data: items } = useSWR(["/api/getDropItems", dropId], fetcher);
 
   return (
-    <Box>
-      <Stack>
-        <Heading>{dropData.name}</Heading>
+    <Box maxW={1080} mx="auto">
+      <Stack my="8">
+        <Heading textAlign="center" fontSize="8xl">
+          {dropData.name}
+        </Heading>
       </Stack>
-      <Stack>
+      <Grid templateColumns="repeat(3, 1fr)" my={4} mx="auto" gap={4}>
         {items ? (
           items.map((item, key) => (
             <NextLink passHref key={key} href={`${nameDashified}/${item.nameDashified}`}>
               <Link>
                 <Box>
-                  <Text>{item.name}</Text>
+                  <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500}></Image>
+                  <Text textAlign="center" fontSize="lg" fontWeight="semibold">
+                    {item.name}
+                  </Text>
                 </Box>
               </Link>
             </NextLink>
@@ -33,7 +40,7 @@ const Shop = ({ data: dropData }) => {
             <Skeleton h={4} />
           </>
         )}
-      </Stack>
+      </Grid>
     </Box>
   );
 };

@@ -35,7 +35,9 @@ const ShippingShellForm = ({ addressPlaceholder, cityPlaceholder, codePlaceholde
       <Stack flex={1}>
         <Select {...register("area")} placeholder={areaPlaceholder}>
           {areaOptions.map(({ name, value }) => (
-            <option value={value ? value : dashify(name)}>{name}</option>
+            <option key={name} value={value ? value : dashify(name)}>
+              {name}
+            </option>
           ))}
         </Select>
       </Stack>
