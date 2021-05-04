@@ -2,7 +2,7 @@ import { useFormContext } from "react-hook-form";
 import { Input, InputRightElement, InputLeftElement, InputGroup, Stack, Heading } from "@chakra-ui/react";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 
-const UserDetailForm = () => {
+const CustomerForm = () => {
   const {
     register,
     formState: { errors, touchedFields },
@@ -33,4 +33,4 @@ const UserDetailForm = () => {
   );
 };
 
-export default UserDetailForm;
+export default CustomerForm;

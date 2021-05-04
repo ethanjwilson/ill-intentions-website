@@ -1,14 +1,13 @@
-import { useFormContext } from "react-hook-form";
-import DeliveryDetailForm from "./DeliveryDetailForm";
-import ShippingDetailsForm from "./ShippingDetailsForm";
-import UserDetailForm from "./UserDetailForm";
+import CustomerForm from "./CustomerForm";
+import DeliveryForm from "./DeliveryForm";
+import ShippingForm from "./ShippingForm";
 
 const CheckoutForm = () => {
   return (
     <>
-      <DeliveryDetailForm />
-      <UserDetailForm />
-      <ShippingDetailsForm />
+      <DeliveryForm />
+      <CustomerForm />
+      <ShippingForm />
     </>
   );
 };

@@ -11,11 +11,14 @@ const checkoutFormScheme = yup.object().shape({
   address: yup.string().when("isShipped", (isShipped, schema) => {
     return isShipped ? schema.required() : schema.optional();
   }),
-  suburb: yup.string().when("isShipped", (isShipped, schema) => {
+  city: yup.string().when("isShipped", (isShipped, schema) => {
     return isShipped ? schema.required() : schema.optional();
   }),
-  postcode: yup.number().when("isShipped", (isShipped, schema) => {
+  code: yup.number().when("isShipped", (isShipped, schema) => {
     return isShipped ? schema.integer().positive().required() : schema.optional();
+  }),
+  area: yup.string().when("isShipped", (isShipped, schema) => {
+    return isShipped ? schema.required() : schema.optional();
   }),
 });
 

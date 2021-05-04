@@ -18,13 +18,12 @@ import checkoutFormScheme from "../../schemas/checkoutFormSchema";
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
-const PaymentForm = ({ checkoutId }) => {
+const PaymentForm = ({ checkoutId, setClientSecret, clientSecret }) => {
   const router = useRouter();
   const [succeeded, setSucceeded] = useState(false);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState("");
   const [disabled, setDisabled] = useState(true);
-  const [clientSecret, setClientSecret] = useState("");
   const stripe = useStripe();
   const elements = useElements();
 
@@ -33,6 +32,7 @@ const PaymentForm = ({ checkoutId }) => {
   }, []);
 
   const cardStyle = {
+    hidePostalCode: true,
     style: {
       base: {
         color: "#32325d",
@@ -103,7 +103,8 @@ const imageLoader = ({ src, width }) =>
   `https://firebasestorage.googleapis.com/v0/b/ill-intentions.appspot.com/o/webp%2F${width}px%2F${src}?alt=media&token=121eebf5-b318-4705-8bbf-9e80e597f231`;
 
 const Checkout = ({ data }) => {
-  const [priceSet, setPriceSet] = useState(false);
+  const [priceSet, setPriceSet] = useState(data.clientSecret ? true : false);
+  const [clientSecret, setClientSecret] = useState(data.clientSecret);
   const { itemId, checkoutId, complete } = data;
   const { data: item } = useSWR(`/api/items/${itemId}`, fetcher);
 
@@ -149,7 +150,7 @@ const Checkout = ({ data }) => {
               {priceSet ? (
                 <Stack>
                   <Elements stripe={promise}>
-                    <PaymentForm checkoutId={checkoutId} />
+                    <PaymentForm clientSecret={clientSecret} setClientSecret={setClientSecret} checkoutId={checkoutId} />
                   </Elements>
                 </Stack>
               ) : (

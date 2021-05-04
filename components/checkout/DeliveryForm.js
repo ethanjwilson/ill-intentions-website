@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
 import { Stack, Heading, Switch, Text, Select } from "@chakra-ui/react";
 
-const DeliveryDetailForm = () => {
+const DeliveryForm = () => {
   const { register, watch } = useFormContext();
   const isShipped = watch("isShipped");
   return (
@@ -21,9 +21,8 @@ const DeliveryDetailForm = () => {
         </Stack>
         <Stack flex={1}>
           <Select {...register("country")} placeholder="Select Country">
-            <option value="NZ">New Zealand</option>
-            <option value="JAP">Japan</option>
-            <option value="US">United States</option>
+            <option value="nz">New Zealand</option>
+            <option value="aus">Australia</option>
           </Select>
         </Stack>
       </Stack>
@@ -31,4 +30,4 @@ const DeliveryDetailForm = () => {
   );
 };
 
-export default DeliveryDetailForm;
+export default DeliveryForm;
