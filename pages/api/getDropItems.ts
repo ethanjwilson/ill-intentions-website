@@ -1,9 +1,15 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
+import { NextApiRequest, NextApiResponse } from "next";
+import { Item } from "../../@types/db";
 import { db } from "../../utils/firebaseAdmin";
 
-export default async (req, res) => {
-  const dropId = req.body.dropId;
+type ReqData = {
+  dropId: string;
+};
+
+export default async (req: NextApiRequest, res: NextApiResponse) => {
+  const { dropId }: ReqData = req.body;
   const data = await db
     .collection("items")
     .where("drop", "==", dropId)
@@ -15,7 +21,7 @@ export default async (req, res) => {
         doc.id = docRef.id;
         tempArray.push(doc);
       });
-      return tempArray;
+      return tempArray as Item[];
     });
   res.status(200).json(data);
 };

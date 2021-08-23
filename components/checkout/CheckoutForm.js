@@ -2,12 +2,12 @@ import CustomerForm from "./CustomerForm";
 import DeliveryForm from "./DeliveryForm";
 import ShippingForm from "./ShippingForm";
 
-const CheckoutForm = () => {
+const CheckoutForm = ({ disabled }) => {
   return (
     <>
-      <DeliveryForm />
-      <CustomerForm />
-      <ShippingForm />
+      <DeliveryForm {...{ disabled }} />
+      <CustomerForm {...{ disabled }} />
+      <ShippingForm {...{ disabled }} />
     </>
   );
 };

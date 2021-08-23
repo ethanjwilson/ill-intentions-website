@@ -2,7 +2,7 @@ import { useFormContext } from "react-hook-form";
 import { Input, InputRightElement, InputLeftElement, InputGroup, Stack, Heading } from "@chakra-ui/react";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 
-const CustomerForm = () => {
+const CustomerForm = ({ disabled }) => {
   const {
     register,
     formState: { errors, touchedFields },
@@ -15,18 +15,18 @@ const CustomerForm = () => {
       <Stack direction="row">
         <InputGroup>
           {/* <InputLeftElement pointerEvents="none" color="gray.300" fontSize="1.2em" children="$" /> */}
-          <Input placeholder="First Name" {...register("firstName")} />
+          <Input placeholder="First Name" {...register("firstName")} disabled={disabled} />
           {touchedFields.firstName && <InputRightElement children={!!errors.firstName ? <CloseIcon color="red.500" /> : <CheckIcon color="green.500" />} />}
         </InputGroup>
         <InputGroup>
           {/* <InputLeftElement pointerEvents="none" color="gray.300" fontSize="1.2em" children="$" /> */}
-          <Input placeholder="Last Name" {...register("lastName")} />
+          <Input placeholder="Last Name" {...register("lastName")} disabled={disabled} />
           {touchedFields.lastName && <InputRightElement children={!!errors.lastName ? <CloseIcon color="red.500" /> : <CheckIcon color="green.500" />} />}
         </InputGroup>
       </Stack>
       <InputGroup>
         {/* <InputLeftElement pointerEvents="none" color="gray.300" fontSize="1.2em" children="$" /> */}
-        <Input placeholder="Email" {...register("email")} />
+        <Input placeholder="Email" {...register("email")} disabled={disabled} />
         {touchedFields.email && <InputRightElement children={!!errors.email ? <CloseIcon color="red.500" /> : <CheckIcon color="green.500" />} />}
       </InputGroup>
     </Stack>

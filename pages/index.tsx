@@ -1,7 +1,8 @@
 import { Box, Button, Heading, Link, Stack } from "@chakra-ui/react";
+import { NextPage } from "next";
 import NextLink from "next/link";
 
-const index = () => {
+const index: NextPage = () => {
   return (
     <Box>
       <Stack placeItems="center">

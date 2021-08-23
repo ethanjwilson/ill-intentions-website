@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import ShippingShellForm from "./ShippingShellForm";
 import { countryConfig } from "../../utils/countryConfig";
 
-const ShippingForm = () => {
+const ShippingForm = ({ disabled }) => {
   const { unregister, watch, getValues, setValue } = useFormContext();
   const [currentCountry, setCurrentCountry] = useState("");
 
@@ -23,7 +23,7 @@ const ShippingForm = () => {
     setCurrentCountry(getValues("country"));
   }, [showShipping, country]);
 
-  return showShipping && country ? <ShippingShellForm {...countryConfig[country]} /> : null;
+  return showShipping && country ? <ShippingShellForm {...countryConfig[country]} disabled={disabled} /> : null;
 };
 
 export default ShippingForm;

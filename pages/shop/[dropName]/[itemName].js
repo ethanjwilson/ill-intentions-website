@@ -60,8 +60,6 @@ export const getServerSideProps = async (context) => {
   }
 
   delete data.createdAt;
-  // delete data.startAt;
-  // delete data.available;
 
   return {
     props: { data },

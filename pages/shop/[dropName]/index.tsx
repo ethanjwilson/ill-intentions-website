@@ -5,8 +5,10 @@ import Image from "next/image";
 import { Box, Grid, Heading, Link, Skeleton, Stack, Text } from "@chakra-ui/react";
 import { db } from "../../../utils/firebaseAdmin";
 import { imageLoader } from "../../../utils/imageLoader";
+import { Item } from "../../../@types/db";
+import { GetServerSideProps, NextPageContext } from "next";
 
-const fetcher = (url, dropId) => axios.post(url, { dropId }).then(({ data }) => data);
+const fetcher = (url: string, dropId: string) => axios.post(url, { dropId }).then(({ data }) => data as Item[]);
 
 const Shop = ({ data: dropData }) => {
   const { dropId, nameDashified } = dropData;
@@ -45,7 +47,7 @@ const Shop = ({ data: dropData }) => {
   );
 };
 
-export const getServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   const dropName = context.params.dropName;
   const data = await db
     .collection("drops")

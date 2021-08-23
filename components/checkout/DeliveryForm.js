@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
 import { Stack, Heading, Switch, Text, Select } from "@chakra-ui/react";
 
-const DeliveryForm = () => {
+const DeliveryForm = ({ disabled }) => {
   const { register, watch } = useFormContext();
   const isShipped = watch("isShipped");
   return (
@@ -14,13 +14,13 @@ const DeliveryForm = () => {
           <Text fontSize="lg" fontWeight="semibold" color={isShipped ? "gray.300" : "black"}>
             Pick up
           </Text>
-          <Switch size="lg" {...register("isShipped")} />
+          <Switch disabled={disabled} size="lg" {...register("isShipped")} />
           <Text fontSize="lg" fontWeight="semibold" color={!isShipped ? "gray.300" : "black"}>
             Ship it to me
           </Text>
         </Stack>
         <Stack flex={1}>
-          <Select {...register("country")} placeholder="Select Country">
+          <Select disabled={!isShipped || disabled} {...register("country")} placeholder="Select Country">
             <option value="nz">New Zealand</option>
             <option value="aus">Australia</option>
           </Select>

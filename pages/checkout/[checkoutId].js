@@ -174,14 +174,13 @@ const Checkout = ({ data }) => {
           <CheckoutShell>
             <Stack>
               <Heading mb={4}>Checkout</Heading>
-              {priceSet ? (
+              <CheckoutForm disabled={priceSet} />
+              {priceSet && (
                 <Stack>
                   <Elements stripe={promise}>
                     <PaymentForm email={email} clientSecret={clientSecret} setClientSecret={setClientSecret} checkoutId={checkoutId} />
                   </Elements>
                 </Stack>
-              ) : (
-                <CheckoutForm />
               )}
             </Stack>
             <Box>
