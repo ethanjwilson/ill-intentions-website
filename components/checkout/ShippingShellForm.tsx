@@ -3,7 +3,22 @@ import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { Input, InputRightElement, InputGroup, Stack, Heading, Select } from "@chakra-ui/react";
 import dashify from "dashify";
 
-const ShippingShellForm = ({ addressPlaceholder, cityPlaceholder, codePlaceholder, areaPlaceholder, areaOptions, disabled }) => {
+type AreaOptions = {
+  name: string;
+  value?: string;
+};
+
+interface ShippingShellFormProps {
+  addressPlaceholder: string;
+  cityPlaceholder: string;
+  statePlaceholder: string;
+  codePlaceholder: string;
+  areaPlaceholder: string;
+  areaOptions: AreaOptions[];
+  disabled: boolean;
+}
+
+const ShippingShellForm = ({ addressPlaceholder, cityPlaceholder, codePlaceholder, areaPlaceholder, areaOptions, disabled }: ShippingShellFormProps) => {
   const {
     register,
     formState: { errors, touchedFields },

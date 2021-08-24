@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import ShippingShellForm from "./ShippingShellForm";
 import { countryConfig } from "../../utils/countryConfig";
 
-const ShippingForm = ({ disabled }) => {
+interface ShippingFormProps {
+  disabled: boolean;
+}
+
+const ShippingForm = ({ disabled }: ShippingFormProps) => {
   const { unregister, watch, getValues, setValue } = useFormContext();
   const [currentCountry, setCurrentCountry] = useState("");
 

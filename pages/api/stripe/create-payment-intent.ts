@@ -1,8 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "../../../utils/firebaseAdmin";
-import Stripe from "stripe";
 import { CheckoutSessions } from "../../../@types/db";
+import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2020-08-27" });
 
 type IntentData = {

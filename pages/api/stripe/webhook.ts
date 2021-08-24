@@ -1,16 +1,24 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import Cors from "cors";
 import { buffer } from "micro";
+import { NextApiRequest, NextApiResponse } from "next";
+import Stripe from "stripe";
+import { CheckoutSessions } from "../../../@types/db";
 import { db } from "../../../utils/firebaseAdmin";
-// Initializing the cors middleware
+
+//Initialise Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2020-08-27" });
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
+
+// Initialise the cors middleware
 const cors = Cors({
   methods: ["POST", "HEAD"],
 });
 // Helper method to wait for a middleware to execute before continuing
 // And to throw an error when an error happens in a middleware
-function runMiddleware(req, res, fn) {
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result) => {
+    fn(req, res, (result: any) => {
       if (result instanceof Error) {
         return reject(result);
       }
@@ -19,8 +27,6 @@ function runMiddleware(req, res, fn) {
     });
   });
 }
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
 export const config = {
   api: {
@@ -28,7 +34,7 @@ export const config = {
   },
 };
 
-export default async (req, res) => {
+export default async (req: NextApiRequest, res: NextApiResponse) => {
   await runMiddleware(req, res, cors);
   if (req.method === "POST") {
     if (endpointSecret) {
@@ -38,7 +44,7 @@ export default async (req, res) => {
         const event = stripe.webhooks.constructEvent(buf, signature, endpointSecret);
         switch (event.type) {
           case "payment_intent.succeeded":
-            const { id } = event.data.object;
+            const { id } = event.data.object as Stripe.PaymentIntent;
             const data = await db
               .collection("checkoutSessions")
               .where("paymentIntentId", "==", id)
@@ -50,7 +56,7 @@ export default async (req, res) => {
                   doc.id = docRef.id;
                   tempArray.push(doc);
                 });
-                return tempArray[0];
+                return tempArray[0] as CheckoutSessions & { id: string };
               });
 
             db.collection("checkoutSessions").doc(data.id).update({
@@ -74,11 +80,11 @@ export default async (req, res) => {
             // Unexpected event type
             console.log(`Unhandled event type ${event.type}.`);
         }
-        res.status(200).send();
+        res.status(200);
         return;
       } catch (error) {
         console.log(`⚠️  Webhook signature verification failed.`, error.message);
-        res.status(400).send();
+        res.status(400);
         return;
       }
     }

@@ -1,6 +1,11 @@
 import { Grid, GridItem, Box } from "@chakra-ui/react";
+import { ReactNode } from "react";
 
-const CheckoutShell = ({ children }) => {
+interface CheckoutShellProps {
+  children?: ReactNode;
+}
+
+const CheckoutShell = ({ children }: CheckoutShellProps) => {
   return (
     <Box minH="100vh" bg="gray.100">
       <Grid py={8} mx="auto" maxW={960} templateColumns="2fr 1fr" gap={8}>

@@ -1,7 +1,11 @@
 import { useFormContext } from "react-hook-form";
 import { Stack, Heading, Switch, Text, Select } from "@chakra-ui/react";
 
-const DeliveryForm = ({ disabled }) => {
+interface DeliveryFormProps {
+  disabled: boolean;
+}
+
+const DeliveryForm = ({ disabled }: DeliveryFormProps) => {
   const { register, watch } = useFormContext();
   const isShipped = watch("isShipped");
   return (

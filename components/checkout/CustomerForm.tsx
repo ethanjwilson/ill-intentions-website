@@ -1,8 +1,12 @@
 import { useFormContext } from "react-hook-form";
-import { Input, InputRightElement, InputLeftElement, InputGroup, Stack, Heading } from "@chakra-ui/react";
+import { Input, InputRightElement, InputGroup, Stack, Heading } from "@chakra-ui/react";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 
-const CustomerForm = ({ disabled }) => {
+interface CustomerFormProps {
+  disabled: boolean;
+}
+
+const CustomerForm = ({ disabled }: CustomerFormProps) => {
   const {
     register,
     formState: { errors, touchedFields },
