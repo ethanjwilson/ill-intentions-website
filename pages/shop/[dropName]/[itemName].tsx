@@ -6,14 +6,16 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { imageLoader } from "../../../utils/imageLoader";
 import Image from "next/image";
+import { GetServerSideProps } from "next";
+import { Item, Sizes } from "../../../@types/db";
 
-const Item = ({ data: { itemId, name, stock, images } }) => {
-  const [size, setSize] = useState("");
+const ItemPage = ({ itemId, name, stock, images }: Item & { itemId: string }) => {
+  const [size, setSize] = useState<Sizes | "">("");
   const router = useRouter();
   const handleCheckout = async () => {
     if (Object.keys(stock).includes(size)) {
-      const { data } = await axios.post("/api/stripe/create-checkout-session", { itemId, size });
-      router.push(`/checkout/${data.checkoutId}`);
+      const { checkoutId }: { checkoutId: string } = await axios.post("/api/stripe/create-checkout-session", { itemId, size }).then(({ data }) => data);
+      router.push(`/checkout/${checkoutId}`);
     }
   };
   return (
@@ -25,8 +27,8 @@ const Item = ({ data: { itemId, name, stock, images } }) => {
       </Stack>
       <Stack my={4} maxW={500} mx="auto">
         <Image priority loader={imageLoader} src={`${images[0]}.webp`} alt={`Picture of ${name}`} width={500} height={500} />
-        <Select onChange={({ target }) => setSize(target.value)} placeholder="Select Size">
-          {Object.keys(stock).map((key, idx) => (
+        <Select onChange={({ target }) => setSize(target.value as Sizes)} placeholder="Select Size">
+          {Object.keys(stock).map((key: Sizes, idx) => (
             <option key={idx} value={key}>
               {stock[key] > 0 ? `${key.toUpperCase()} - ${stock[key]} in stock` : "Not in stock"}
             </option>
@@ -38,9 +40,9 @@ const Item = ({ data: { itemId, name, stock, images } }) => {
   );
 };
 
-export const getServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   const itemName = context.params.itemName;
-  const data = await db
+  const data: Item = await db
     .collection("items")
     .where("nameDashified", "==", itemName)
     .get()
@@ -62,8 +64,8 @@ export const getServerSideProps = async (context) => {
   delete data.createdAt;
 
   return {
-    props: { data },
+    props: { ...data },
   };
 };
 
-export default Item;
+export default ItemPage;

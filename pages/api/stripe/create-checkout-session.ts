@@ -9,8 +9,8 @@ type SessionData = {
   size: Sizes;
 };
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { itemId, size }: SessionData = req.body;
+export default async (req: NextApiRequest, res: NextApiResponse<{ checkoutId: string }>) => {
+  const { itemId, size } = <SessionData>req["body"];
   const checkoutId = uuid();
 
   await db.collection("checkoutSessions").doc(checkoutId).set({

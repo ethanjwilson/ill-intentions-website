@@ -6,7 +6,7 @@ import { Box, Grid, Heading, Link, Skeleton, Stack, Text } from "@chakra-ui/reac
 import { db } from "../../../utils/firebaseAdmin";
 import { imageLoader } from "../../../utils/imageLoader";
 import { Item } from "../../../@types/db";
-import { GetServerSideProps, NextPageContext } from "next";
+import { GetServerSideProps } from "next";
 
 const fetcher = (url: string, dropId: string) => axios.post(url, { dropId }).then(({ data }) => data as Item[]);
 

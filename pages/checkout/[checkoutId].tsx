@@ -1,4 +1,4 @@
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, StripeCardElementChangeEvent } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
 import { useRouter } from "next/router";
@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import Image from "next/image";
 import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, MouseEvent } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { db } from "../../utils/firebaseAdmin";
 import useSWR from "swr";
@@ -16,20 +16,30 @@ import CheckoutForm from "../../components/checkout/CheckoutForm";
 import CheckoutShell from "../../components/checkout/CheckoutShell";
 import checkoutFormScheme from "../../schemas/checkoutFormSchema";
 import { imageLoader } from "../../utils/imageLoader";
+import { Dispatch, SetStateAction } from "react";
+import { CheckoutSessions, Countries, Item } from "../../@types/db";
+import { GetServerSideProps } from "next";
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
-const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }) => {
+interface PaymentFormInterface {
+  checkoutId: string;
+  setClientSecret: Dispatch<SetStateAction<string>>;
+  clientSecret: string;
+  email: string;
+}
+
+const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }: PaymentFormInterface) => {
   const router = useRouter();
   const [succeeded, setSucceeded] = useState(false);
-  const [error, setError] = useState(null);
-  const [processing, setProcessing] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState<boolean | null>(null);
   const [disabled, setDisabled] = useState(true);
   const stripe = useStripe();
   const elements = useElements();
 
   useEffect(() => {
-    axios.post("/api/stripe/create-payment-intent", { checkoutId }).then(({ data }) => setClientSecret(data.clientSecret));
+    axios.post("/api/stripe/create-payment-intent", { checkoutId }).then(({ data }: { data: { clientSecret: string } }) => setClientSecret(data.clientSecret));
   }, []);
 
   const cardStyle = {
@@ -50,14 +60,14 @@ const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }) => {
       },
     },
   };
-  const handleChange = async (event) => {
+  const handleChange = async (event: StripeCardElementChangeEvent) => {
     // Listen for changes in the CardElement
     // and display any errors as the customer types their card details
     setDisabled(event.empty);
     setError(event.error ? event.error.message : "");
   };
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event: MouseEvent) => {
+    event.preventDefault();
     setProcessing(true);
     const payload = await stripe.confirmCardPayment(clientSecret, {
       receipt_email: email,
@@ -99,16 +109,33 @@ const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }) => {
   );
 };
 
-const fetcher = (url) => axios.get(url).then(({ data }) => data);
+const fetcher = <T,>(url: string) => axios.get(url).then(({ data }: { data: T }) => data);
 
-const Checkout = ({ data }) => {
+interface CheckoutInterface {
+  itemId: string;
+  checkoutId: string;
+}
+
+type FormValues = {
+  area: string;
+  city: string;
+  code: number;
+  country: Countries;
+  address: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isShipped: boolean;
+};
+
+const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
   const [priceSet, setPriceSet] = useState(data?.clientSecret ? true : false);
   const [clientSecret, setClientSecret] = useState(data?.clientSecret ?? "");
   const [email, setEmail] = useState(data?.customer?.email ?? "");
   const { itemId, checkoutId, complete, size } = data;
-  const { data: item } = useSWR(`/api/items/${itemId}`, fetcher);
+  const { data: item } = useSWR<Item>(`/api/items/${itemId}`, fetcher);
 
-  const methods = useForm({
+  const methods = useForm<FormValues>({
     mode: "all",
     reValidateMode: "onChange",
     resolver: yupResolver(checkoutFormScheme),
@@ -116,7 +143,7 @@ const Checkout = ({ data }) => {
   const {
     formState: { isDirty, isValid },
   } = methods;
-  const onSubmit = (data) => {
+  const onSubmit = (data: FormValues) => {
     const shippingAddress = data.isShipped
       ? {
           streetAddress: data.address,
@@ -209,13 +236,16 @@ const Checkout = ({ data }) => {
   );
 };
 
-export const getServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   const checkoutId = context.params.checkoutId;
-  const data = await db
-    .collection("checkoutSessions")
-    .doc(checkoutId)
-    .get()
-    .then((doc) => doc.data());
+  let data: CheckoutSessions;
+  if (typeof checkoutId === "string") {
+    data = await db
+      .collection("checkoutSessions")
+      .doc(checkoutId)
+      .get()
+      .then((doc) => doc.data() as CheckoutSessions);
+  }
   if (!data) {
     console.log("Checkout session not found");
     context.res.writeHead(302, { location: "/" });
