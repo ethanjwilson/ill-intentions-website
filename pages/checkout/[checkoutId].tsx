@@ -14,11 +14,11 @@ import axios from "axios";
 import { FormProvider, useForm } from "react-hook-form";
 import CheckoutForm from "../../components/checkout/CheckoutForm";
 import CheckoutShell from "../../components/checkout/CheckoutShell";
-import checkoutFormScheme from "../../schemas/checkoutFormSchema";
 import { imageLoader } from "../../utils/imageLoader";
 import { Dispatch, SetStateAction } from "react";
 import { CheckoutSessions, Countries, Item } from "../../@types/db";
 import { GetServerSideProps } from "next";
+import checkoutFormSchema from "../../schemas/checkoutFormSchema";
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
@@ -138,7 +138,7 @@ const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
   const methods = useForm<FormValues>({
     mode: "all",
     reValidateMode: "onChange",
-    resolver: yupResolver(checkoutFormScheme),
+    resolver: yupResolver(checkoutFormSchema),
   });
   const {
     formState: { isDirty, isValid },
