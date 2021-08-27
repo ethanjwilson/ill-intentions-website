@@ -26,7 +26,16 @@ const ItemPage = ({ itemId, name, stock, images }: Item & { itemId: string }) =>
         </Heading>
       </Stack>
       <Stack my={4} maxW={500} mx="auto">
-        <Image priority loader={imageLoader} src={`${images[0]}.webp`} alt={`Picture of ${name}`} width={500} height={500} />
+        <Image
+          priority
+          placeholder="blur"
+          loader={imageLoader}
+          blurDataURL={imageLoader({ src: `${images[0]}.webp`, width: 250 })}
+          src={`${images[0]}.webp`}
+          alt={`Picture of ${name}`}
+          width={500}
+          height={500}
+        />
         <Select onChange={({ target }) => setSize(target.value as Sizes)} placeholder="Select Size">
           {Object.keys(stock).map((key: Sizes, idx) => (
             <option key={idx} value={key}>

@@ -19,15 +19,15 @@ const ShippingForm = ({ disabled }: ShippingFormProps) => {
       unregister(["address", "city", "code", "area"]);
     }
     if (showShipping && country !== currentCountry) {
-      setValue("address", "", { shouldValidate: true });
-      setValue("city", "", { shouldValidate: true });
-      setValue("code", "", { shouldValidate: true });
-      setValue("area", "", { shouldValidate: true });
+      setValue("address", "", { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+      setValue("city", "", { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+      setValue("code", "", { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+      setValue("area", "", { shouldValidate: true, shouldDirty: true, shouldTouch: true });
     }
     setCurrentCountry(getValues("country"));
   }, [showShipping, country]);
 
-  return showShipping && country ? <ShippingShellForm {...countryConfig[country]} disabled={disabled} /> : null;
+  return showShipping && country && country.length > 0 ? <ShippingShellForm {...countryConfig[country]} disabled={disabled} /> : null;
 };
 
 export default ShippingForm;

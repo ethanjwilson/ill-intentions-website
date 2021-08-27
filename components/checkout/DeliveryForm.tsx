@@ -24,7 +24,10 @@ const DeliveryForm = ({ disabled }: DeliveryFormProps) => {
           </Text>
         </Stack>
         <Stack flex={1}>
-          <Select disabled={!isShipped || disabled} {...register("country")} placeholder="Select Country">
+          <Select disabled={!isShipped || disabled} {...register("country")} defaultValue="">
+            <option disabled value="">
+              Select Country
+            </option>
             <option value="nz">New Zealand</option>
             <option value="aus">Australia</option>
           </Select>

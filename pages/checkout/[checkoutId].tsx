@@ -1,13 +1,9 @@
-import { loadStripe, StripeCardElementChangeEvent } from "@stripe/stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
-
-import { useRouter } from "next/router";
 import { yupResolver } from "@hookform/resolvers/yup";
-
 import Image from "next/image";
-import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
-import { useEffect, useState, MouseEvent } from "react";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { db } from "../../utils/firebaseAdmin";
 import useSWR from "swr";
 import axios from "axios";
@@ -15,99 +11,12 @@ import { FormProvider, useForm } from "react-hook-form";
 import CheckoutForm from "../../components/checkout/CheckoutForm";
 import CheckoutShell from "../../components/checkout/CheckoutShell";
 import { imageLoader } from "../../utils/imageLoader";
-import { Dispatch, SetStateAction } from "react";
 import { CheckoutSessions, Countries, Item } from "../../@types/db";
 import { GetServerSideProps } from "next";
 import checkoutFormSchema from "../../schemas/checkoutFormSchema";
+import PaymentForm from "../../components/checkout/PaymentForm";
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
-
-interface PaymentFormInterface {
-  checkoutId: string;
-  setClientSecret: Dispatch<SetStateAction<string>>;
-  clientSecret: string;
-  email: string;
-}
-
-const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }: PaymentFormInterface) => {
-  const router = useRouter();
-  const [succeeded, setSucceeded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [processing, setProcessing] = useState<boolean | null>(null);
-  const [disabled, setDisabled] = useState(true);
-  const stripe = useStripe();
-  const elements = useElements();
-
-  useEffect(() => {
-    axios.post("/api/stripe/create-payment-intent", { checkoutId }).then(({ data }: { data: { clientSecret: string } }) => setClientSecret(data.clientSecret));
-  }, []);
-
-  const cardStyle = {
-    hidePostalCode: true,
-    style: {
-      base: {
-        color: "#32325d",
-        fontFamily: "Roboto, sans-serif",
-        fontSmoothing: "antialiased",
-        fontSize: "16px",
-        "::placeholder": {
-          color: "#32325d",
-        },
-      },
-      invalid: {
-        color: "#fa755a",
-        iconColor: "#fa755a",
-      },
-    },
-  };
-  const handleChange = async (event: StripeCardElementChangeEvent) => {
-    // Listen for changes in the CardElement
-    // and display any errors as the customer types their card details
-    setDisabled(event.empty);
-    setError(event.error ? event.error.message : "");
-  };
-  const handleSubmit = async (event: MouseEvent) => {
-    event.preventDefault();
-    setProcessing(true);
-    const payload = await stripe.confirmCardPayment(clientSecret, {
-      receipt_email: email,
-      payment_method: {
-        card: elements.getElement(CardElement),
-      },
-    });
-    if (payload.error) {
-      setError(`Payment failed ${payload.error.message}`);
-      setProcessing(false);
-    } else {
-      await axios.post("/api/stripe/end-checkout-session", { checkoutId });
-      setError(null);
-      setProcessing(false);
-      setSucceeded(true);
-      router.reload();
-    }
-  };
-  return (
-    <Box borderRadius="lg" bg="white" p={8}>
-      <form id="payment-form">
-        <CardElement id="card-element" options={cardStyle} onChange={handleChange} />
-        <Button colorScheme="blue" mt={8} isLoading={processing} disabled={processing || disabled || succeeded} onClick={handleSubmit}>
-          Pay Now
-        </Button>
-        {/* Show any error that happens when processing the payment */}
-        {error && (
-          <div className="card-error" role="alert">
-            {error}
-          </div>
-        )}
-        {/* Show a success message upon completion */}
-        {/* <p className={succeeded ? "result-message" : "result-message hidden"}>
-        Payment succeeded, see the result in your
-        <a href={`https://dashboard.stripe.com/test/payments`}> Stripe dashboard.</a> Refresh the page to pay again.
-      </p> */}
-      </form>
-    </Box>
-  );
-};
 
 const fetcher = <T,>(url: string) => axios.get(url).then(({ data }: { data: T }) => data);
 
@@ -120,12 +29,12 @@ type FormValues = {
   area: string;
   city: string;
   code: number;
-  country: Countries;
   address: string;
+  country: Countries;
+  isShipped: boolean;
   email: string;
   firstName: string;
   lastName: string;
-  isShipped: boolean;
 };
 
 const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
@@ -140,6 +49,21 @@ const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
     reValidateMode: "onChange",
     resolver: yupResolver(checkoutFormSchema),
   });
+
+  useEffect(() => {
+    const repopulateForm = () => {
+      const cachedFormData = localStorage.getItem(checkoutId);
+
+      if (cachedFormData) {
+        const formData = JSON.parse(cachedFormData) as FormValues;
+        Object.keys(formData).map((key: keyof FormValues) => {
+          methods.setValue(key, formData[key], { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+        });
+      }
+    };
+    repopulateForm();
+  }, [priceSet]);
+
   const {
     formState: { isDirty, isValid },
   } = methods;
@@ -168,6 +92,20 @@ const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
       .then(() => {
         setPriceSet(true);
         setEmail(data.email);
+        localStorage.setItem(
+          checkoutId,
+          JSON.stringify({
+            address: data.address,
+            city: data.city,
+            code: data.code,
+            area: data.area,
+            country: data.isShipped ? data.country : "",
+            isShipped: data.isShipped,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+          })
+        );
       });
   };
 
@@ -200,14 +138,33 @@ const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
         <form onSubmit={methods.handleSubmit(onSubmit)}>
           <CheckoutShell>
             <Stack>
-              <Heading mb={4}>Checkout</Heading>
-              <CheckoutForm disabled={priceSet} />
-              {priceSet && (
-                <Stack>
-                  <Elements stripe={promise}>
-                    <PaymentForm email={email} clientSecret={clientSecret} setClientSecret={setClientSecret} checkoutId={checkoutId} />
-                  </Elements>
-                </Stack>
+              <Flex alignItems="center">
+                <Heading mb={4}>Checkout</Heading>
+                {priceSet && (
+                  <Box ml="auto">
+                    <Button colorScheme="blue" onClick={() => setPriceSet(false)}>
+                      Back
+                    </Button>
+                  </Box>
+                )}
+              </Flex>
+              {priceSet ? (
+                <>
+                  <Stack>
+                    <Elements stripe={promise}>
+                      <PaymentForm email={email} clientSecret={clientSecret} setClientSecret={setClientSecret} checkoutId={checkoutId} />
+                    </Elements>
+                  </Stack>
+                </>
+              ) : (
+                <>
+                  <CheckoutForm disabled={priceSet} />
+                  <Stack bg="white" spacing={4} p={4} borderRadius="lg">
+                    <Button colorScheme="blue" type="submit" disabled={!isDirty || !isValid || priceSet}>
+                      Continue to payment
+                    </Button>
+                  </Stack>
+                </>
               )}
             </Stack>
             <Box>
@@ -222,10 +179,16 @@ const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
                       <Text>Size: {size.toUpperCase()}</Text>
                     </Stack>
                   </Box>
-                  <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
-                  <Button colorScheme="blue" type="submit" disabled={!isDirty || !isValid || priceSet}>
-                    Continue to payment
-                  </Button>
+                  <Image
+                    priority
+                    placeholder="blur"
+                    loader={imageLoader}
+                    blurDataURL={imageLoader({ src: `${item.images[0]}.webp`, width: 250 })}
+                    src={`${item.images[0]}.webp`}
+                    alt={`Picture of ${item.name}`}
+                    width={500}
+                    height={500}
+                  />
                 </Stack>
               )}
             </Box>

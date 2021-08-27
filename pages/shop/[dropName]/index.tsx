@@ -15,25 +15,36 @@ const Shop = ({ data: dropData }) => {
   const { data: items } = useSWR(["/api/getDropItems", dropId], fetcher);
 
   return (
-    <Box maxW={1080} mx="auto">
+    <Stack px={8} bg="gray.100" minH="100vh">
       <Stack my="8">
         <Heading textAlign="center" fontSize="8xl">
           {dropData.name}
         </Heading>
       </Stack>
-      <Grid templateColumns="repeat(3, 1fr)" my={4} mx="auto" gap={4}>
+      <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" py={4} gap={4}>
         {items ? (
           items.map((item, key) => (
-            <NextLink passHref key={key} href={`${nameDashified}/${item.nameDashified}`}>
-              <Link>
-                <Box>
-                  <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500}></Image>
-                  <Text textAlign="center" fontSize="lg" fontWeight="semibold">
-                    {item.name}
-                  </Text>
-                </Box>
-              </Link>
-            </NextLink>
+            <Box key={key} bg="white" borderRadius="xl">
+              <NextLink passHref href={`${nameDashified}/${item.nameDashified}`}>
+                <Link>
+                  <Box m={4}>
+                    <Image
+                      priority
+                      placeholder="blur"
+                      loader={imageLoader}
+                      blurDataURL={imageLoader({ src: `${item.images[0]}.webp`, width: 250 })}
+                      src={`${item.images[0]}.webp`}
+                      alt={`Picture of ${item.name}`}
+                      width={500}
+                      height={500}
+                    ></Image>
+                    <Text textAlign="center" fontSize="lg" fontWeight="semibold">
+                      {item.name}
+                    </Text>
+                  </Box>
+                </Link>
+              </NextLink>
+            </Box>
           ))
         ) : (
           <>
@@ -43,7 +54,7 @@ const Shop = ({ data: dropData }) => {
           </>
         )}
       </Grid>
-    </Box>
+    </Stack>
   );
 };
 
