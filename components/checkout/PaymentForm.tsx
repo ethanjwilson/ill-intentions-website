@@ -1,6 +1,6 @@
 import { StripeCardElementChangeEvent } from "@stripe/stripe-js";
 import { useRouter } from "next/router";
-import { Box, Button, Heading, Stack } from "@chakra-ui/react";
+import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
 import { useEffect, useState, MouseEvent } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import axios from "axios";
@@ -60,7 +60,7 @@ const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }: Payme
       },
     });
     if (payload.error) {
-      setError(`Payment failed ${payload.error.message}`);
+      setError(payload.error.message);
       setProcessing(false);
     } else {
       await axios.post("/api/stripe/end-checkout-session", { checkoutId });
@@ -77,15 +77,19 @@ const PaymentForm = ({ checkoutId, setClientSecret, clientSecret, email }: Payme
       </Heading>
       <Box pt={4} id="payment-form">
         <CardElement id="card-element" options={cardStyle} onChange={handleChange} />
+        {error && (
+          <Text fontSize="sm" pt={2} color="red" role="alert">
+            <Text fontWeight="bold" as="span">
+              Error:
+            </Text>
+            {` ${error}`}
+          </Text>
+        )}
         <Button isFullWidth colorScheme="blue" mt={8} isLoading={processing} disabled={processing || disabled || succeeded} onClick={handleSubmit}>
           Pay Now
         </Button>
         {/* Show any error that happens when processing the payment */}
-        {error && (
-          <div className="card-error" role="alert">
-            {error}
-          </div>
-        )}
+
         {/* Show a success message upon completion */}
         {/* <p className={succeeded ? "result-message" : "result-message hidden"}>
         Payment succeeded, see the result in your
