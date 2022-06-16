@@ -26,6 +26,7 @@ export const getStaticProps: GetStaticProps = async () => {
   let data = await client.fetch(`*[_type == "product"]`);
   return {
     props: { data },
+    revalidate: 10,
   };
 };
 
