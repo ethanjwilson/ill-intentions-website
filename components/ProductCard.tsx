@@ -1,4 +1,4 @@
-import { useNextSanityImage } from "next-sanity-image";
+import { useNextSanityImage, UseNextSanityImageProps } from "next-sanity-image";
 import Image from "next/image";
 import NextLink from "next/link";
 
@@ -7,7 +7,7 @@ import { Box, Link, Text } from "@chakra-ui/react";
 import { client } from "../utils/sanityClient";
 
 const ProductCard = ({ product }) => {
-  const imageProps = useNextSanityImage(client, product.defaultProductVariant.images[0]);
+  const imageProps: UseNextSanityImageProps = useNextSanityImage(client, product.defaultProductVariant.images[0]);
   return (
     <Box bg="white" borderRadius="xl">
       {/* <Text>{JSON.stringify(item)}</Text> */}

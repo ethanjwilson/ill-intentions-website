@@ -23,7 +23,7 @@ const LiquidImage = ({ images, name }: { images: any; name: string }) => {
   return (
     <Box position="relative">
       <Box transition="opacity 1000ms ease-in-out" opacity={!isLoading ? "0" : "1"}>
-        <Image {...firstImageProps} priority layout="fixed" alt={`Picture of ${name}`} width={500} height={500} onLoadingComplete={() => setIsloading(false)} />
+        <Image {...firstImageProps} priority placeholder="blur" layout="fixed" alt={`Picture of ${name}`} width={500} height={500} onLoadingComplete={() => setIsloading(false)} />
       </Box>
       <Box position="absolute" inset="0" transition="opacity 500ms ease-in-out" ref={imageRef} width={500} height={500} style={{ opacity: isLoading ? "0" : "1" }}></Box>
     </Box>
