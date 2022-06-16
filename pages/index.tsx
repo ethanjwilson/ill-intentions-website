@@ -1,6 +1,7 @@
-import { Box, Button, Heading, Link, Stack } from "@chakra-ui/react";
 import { NextPage } from "next";
 import NextLink from "next/link";
+
+import { Box, Button, Heading, Link, Stack } from "@chakra-ui/react";
 
 const index: NextPage = () => {
   return (
@@ -11,9 +12,9 @@ const index: NextPage = () => {
             ill intentions
           </Heading>
         </Stack>
-        <NextLink passHref href={`/shop/vengeance`}>
+        <NextLink passHref href={`/shop`}>
           <Link>
-            <Button>Vengeance</Button>
+            <Button>Shop</Button>
           </Link>
         </NextLink>
       </Stack>
