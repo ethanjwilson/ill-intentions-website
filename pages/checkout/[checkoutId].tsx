@@ -37,7 +37,7 @@ const Checkout = ({ data }) => {
   const [priceSet, setPriceSet] = useState(data?.clientSecret ? true : false);
   const [clientSecret, setClientSecret] = useState(data?.clientSecret ?? "");
   const [email, setEmail] = useState(data?.customer?.email ?? "");
-  const { _id: checkoutId, complete, size } = data;
+  const { _id: checkoutId, completed, size } = data;
 
   const item = { ...data.product, ...data.productVariant };
   const imageProps: UseNextSanityImageProps = useNextSanityImage(client, item.images[0]);
@@ -106,7 +106,7 @@ const Checkout = ({ data }) => {
       });
   };
 
-  return complete ? (
+  return completed ? (
     <Box bg="gray.100" minH="100vh">
       <Stack py={8}>
         <Heading textAlign="center">Thank you for your purchase</Heading>
