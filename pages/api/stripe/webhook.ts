@@ -3,8 +3,6 @@ import Cors from "cors";
 import { buffer } from "micro";
 import { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
-import { CheckoutSessions } from "../../../@types/db";
-import { db } from "../../../utils/firebaseAdmin";
 
 //Initialise Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2020-08-27" });
@@ -45,36 +43,36 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         switch (event.type) {
           case "payment_intent.succeeded":
             const { id } = event.data.object as Stripe.PaymentIntent;
-            const data = await db
-              .collection("checkoutSessions")
-              .where("paymentIntentId", "==", id)
-              .get()
-              .then((snap) => {
-                const tempArray = [];
-                snap.forEach((docRef) => {
-                  const doc = docRef.data();
-                  doc.id = docRef.id;
-                  tempArray.push(doc);
-                });
-                return tempArray[0] as CheckoutSessions & { id: string };
-              });
+            // const data = await db
+            //   .collection("checkoutSessions")
+            //   .where("paymentIntentId", "==", id)
+            //   .get()
+            //   .then((snap) => {
+            //     const tempArray = [];
+            //     snap.forEach((docRef) => {
+            //       const doc = docRef.data();
+            //       doc.id = docRef.id;
+            //       tempArray.push(doc);
+            //     });
+            //     return tempArray[0] as CheckoutSessions & { id: string };
+            //   });
 
-            db.collection("checkoutSessions").doc(data.id).update({
-              complete: true,
-            });
+            // db.collection("checkoutSessions").doc(data.id).update({
+            //   complete: true,
+            // });
 
-            // TODO
-            // Decreament Stock
+            // // TODO
+            // // Decreament Stock
 
-            const { customer, size, itemId } = data;
-            db.collection("sales").add({
-              paymentIntentId: id,
-              createdAt: new Date().toISOString(),
-              itemId,
-              size,
-              chargeAmount: data.price,
-              customer,
-            });
+            // const { customer, size, itemId } = data;
+            // db.collection("sales").add({
+            //   paymentIntentId: id,
+            //   createdAt: new Date().toISOString(),
+            //   itemId,
+            //   size,
+            //   chargeAmount: data.price,
+            //   customer,
+            // });
             break;
           default:
             // Unexpected event type
