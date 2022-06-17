@@ -8,16 +8,18 @@ import { PortableText } from "@portabletext/react";
 
 import { Sizes } from "../../@types/db";
 import LiquidImage from "../../components/LiquidImage";
-import { ProductPortableTextComponents } from "../../components/portabletext";
+import { ProductPortableTextComponents } from "../../components/ProductPortableTextComponents";
 import { client } from "../../utils/sanityClient";
 
 const ItemPage = ({ product }) => {
-  console.log(product);
   const [size, setSize] = useState<Sizes | "">("");
+  const [variant, setVariant] = useState(product.variants[0]);
   const router = useRouter();
   const handleCheckout = async () => {
-    // if (Object.keys(stock).includes(size)) {
-    //   const { checkoutId }: { checkoutId: string } = await axios.post("/api/stripe/create-checkout-session", { itemId, size }).then(({ data }) => data);
+    // if (Object.keys(variant.stock).includes(size)) {
+    //   const { checkoutId }: { checkoutId: string } = await axios
+    //     .post("/api/stripe/create-checkout-session", { productId: product._id, productVariantId: variant._id, size })
+    //     .then(({ data }) => data);
     //   router.push(`/checkout/${checkoutId}`);
     // }
   };
@@ -31,12 +33,13 @@ const ItemPage = ({ product }) => {
       </Stack>
       <Stack spacing={16} direction="row" mx="auto" justify="center">
         <Stack maxW={500}>
-          <LiquidImage images={product.defaultProductVariant.images} name={product.title} />
+          <LiquidImage images={variant.images} name={product.title} />
         </Stack>
         <Stack mt="auto">
-          <PortableText value={product.body.en} />
+          {/* @ts-ignore */}
+          <PortableText value={product.body.en} components={ProductPortableTextComponents} />
           <Select onChange={({ target }) => setSize(target.value as Sizes)} placeholder="Select Size">
-            {Object.entries(product.defaultProductVariant.stock)
+            {Object.entries(variant.stock)
               .filter(([_, value]) => value > 0)
               .map(([key, value], idx) => (
                 <option key={idx} value={key}>
@@ -53,7 +56,10 @@ const ItemPage = ({ product }) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const itemName = context.params.itemName;
-  const data = await client.fetch(`*[_type == "product" && slug.current == "${itemName}"]`);
+  const data = await client.fetch(`*[_type == "product" && slug.current == "${itemName}"] { 
+    ...,
+    variants[]->
+   }`);
 
   const product = data[0];
 
@@ -62,6 +68,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     context.res.writeHead(302, { location: "/" });
     context.res.end();
   }
+
+  console.log(product);
   return {
     props: { product },
   };

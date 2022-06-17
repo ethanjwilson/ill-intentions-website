@@ -1,24 +1,27 @@
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-import { yupResolver } from "@hookform/resolvers/yup";
-import Image from "next/image";
-import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { db } from "../../utils/firebaseAdmin";
-import useSWR from "swr";
 import axios from "axios";
+import { GetServerSideProps } from "next";
+import { useNextSanityImage, UseNextSanityImageProps } from "next-sanity-image";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import useSWR from "swr";
+
+import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+
+import { CheckoutSessions, Countries, Item } from "../../@types/db";
 import CheckoutForm from "../../components/checkout/CheckoutForm";
 import CheckoutShell from "../../components/checkout/CheckoutShell";
-import { imageLoader } from "../../utils/imageLoader";
-import { CheckoutSessions, Countries, Item } from "../../@types/db";
-import { GetServerSideProps } from "next";
-import checkoutFormSchema from "../../schemas/checkoutFormSchema";
 import PaymentForm from "../../components/checkout/PaymentForm";
+import checkoutFormSchema from "../../schemas/checkoutFormSchema";
+import { imageLoader } from "../../utils/imageLoader";
+import { client } from "../../utils/sanityClient";
+
+// http://localhost:3000/checkout/vOYBmzG0R4TianHAkusWsI
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
-
-const fetcher = <T,>(url: string) => axios.get(url).then(({ data }: { data: T }) => data);
 
 interface CheckoutInterface {
   itemId: string;
@@ -37,12 +40,14 @@ type FormValues = {
   lastName: string;
 };
 
-const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
+const Checkout = ({ data }) => {
   const [priceSet, setPriceSet] = useState(data?.clientSecret ? true : false);
   const [clientSecret, setClientSecret] = useState(data?.clientSecret ?? "");
   const [email, setEmail] = useState(data?.customer?.email ?? "");
   const { itemId, checkoutId, complete, size } = data;
-  const { data: item } = useSWR<Item>(`/api/items/${itemId}`, fetcher);
+
+  const item = { ...data.product, ...data.productVariant };
+  const imageProps: UseNextSanityImageProps = useNextSanityImage(client, item.images[0]);
 
   const methods = useForm<FormValues>({
     mode: "all",
@@ -176,19 +181,10 @@ const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
                     </Text>
                     <Stack direction="row">
                       <Text>${item.price / 100}</Text>
-                      <Text>Size: {size.toUpperCase()}</Text>
+                      <Text>Size: {data.size.toUpperCase()}</Text>
                     </Stack>
                   </Box>
-                  <Image
-                    priority
-                    placeholder="blur"
-                    loader={imageLoader}
-                    blurDataURL={imageLoader({ src: `${item.images[0]}.webp`, width: 250 })}
-                    src={`${item.images[0]}.webp`}
-                    alt={`Picture of ${item.name}`}
-                    width={500}
-                    height={500}
-                  />
+                  <Image {...imageProps} priority placeholder="blur" alt={`Picture of ${item.title}`} layout="responsive"></Image>
                 </Stack>
               )}
             </Box>
@@ -201,22 +197,25 @@ const Checkout = ({ data }: { data: CheckoutInterface & CheckoutSessions }) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const checkoutId = context.params.checkoutId;
-  let data: CheckoutSessions;
+  let data;
   if (typeof checkoutId === "string") {
-    data = await db
-      .collection("checkoutSessions")
-      .doc(checkoutId)
-      .get()
-      .then((doc) => doc.data() as CheckoutSessions);
+    data = await client.fetch(`*[_type == "sale" && _id == "${checkoutId}"] {
+      ...,
+      product->,
+      productVariant->,
+    }`);
   }
-  if (!data) {
+
+  const checkoutData = data[0];
+
+  if (!checkoutData) {
     console.log("Checkout session not found");
     context.res.writeHead(302, { location: "/" });
     context.res.end();
   }
 
   return {
-    props: { data: { ...data, checkoutId } },
+    props: { data: checkoutData },
   };
 };
 

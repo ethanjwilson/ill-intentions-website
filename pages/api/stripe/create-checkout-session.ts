@@ -1,24 +1,33 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { NextApiRequest, NextApiResponse } from "next";
 import { v4 as uuid } from "uuid";
+
 import { Sizes } from "../../../@types/db";
-import { db } from "../../../utils/firebaseAdmin";
+import { client } from "../../../utils/sanityClient";
 
 type SessionData = {
-  itemId: string;
+  productId: string;
+  productVariantId: string;
   size: Sizes;
 };
 
 export default async (req: NextApiRequest, res: NextApiResponse<{ checkoutId: string }>) => {
-  const { itemId, size } = <SessionData>req["body"];
-  const checkoutId = uuid();
+  const { productId, productVariantId, size } = <SessionData>req["body"];
+  console.log(productId, productVariantId, size);
 
-  await db.collection("checkoutSessions").doc(checkoutId).set({
-    complete: false,
-    itemId,
-    size,
+  const data = await client.create({
+    _type: "sale",
+    size: size,
     priceSet: false,
+    product: {
+      _type: "reference",
+      _ref: productId,
+    },
+    productVariant: {
+      _type: "reference",
+      _ref: productVariantId,
+    },
   });
 
-  res.status(201).json({ checkoutId });
+  res.status(201).json({ checkoutId: data._id });
 };

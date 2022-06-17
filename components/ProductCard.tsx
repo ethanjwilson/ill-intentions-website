@@ -7,10 +7,10 @@ import { Box, Link, Text } from "@chakra-ui/react";
 import { client } from "../utils/sanityClient";
 
 const ProductCard = ({ product }) => {
-  const imageProps: UseNextSanityImageProps = useNextSanityImage(client, product.defaultProductVariant.images[0]);
+  console.log(product);
+  const imageProps: UseNextSanityImageProps = useNextSanityImage(client, product.variants[0].images[0]);
   return (
     <Box bg="white" borderRadius="xl">
-      {/* <Text>{JSON.stringify(item)}</Text> */}
       <NextLink passHref href={`/shop/${product.slug.current}`}>
         <Link>
           <Box m={4}>
