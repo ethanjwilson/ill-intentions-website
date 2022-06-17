@@ -1,5 +1,6 @@
 import { useFormContext } from "react-hook-form";
-import { Stack, Heading, Switch, Text, Select } from "@chakra-ui/react";
+
+import { Heading, Select, Stack, Switch, Text } from "@chakra-ui/react";
 
 interface DeliveryFormProps {
   disabled: boolean;
@@ -28,8 +29,8 @@ const DeliveryForm = ({ disabled }: DeliveryFormProps) => {
             <option disabled value="">
               Select Country
             </option>
-            <option value="nz">New Zealand</option>
-            <option value="aus">Australia</option>
+            <option value="nzl">New Zealand</option>
+            {/* <option value="aus">Australia</option> */}
           </Select>
         </Stack>
       </Stack>

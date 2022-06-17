@@ -1,5 +1,5 @@
 export const countryConfig = {
-  nz: {
+  nzl: {
     addressPlaceholder: "Street Address & Suburb",
     cityPlaceholder: "City or Town",
     codePlaceholder: "Post Code",
@@ -22,36 +22,36 @@ export const countryConfig = {
       { name: "Southland - Murihiku" },
     ],
   },
-  aus: {
-    addressPlaceholder: "Street Address & Suburb",
-    cityPlaceholder: "City or Town",
-    codePlaceholder: "Post Code",
-    areaPlaceholder: "Select State or Territory",
-    areaOptions: [
-      {
-        name: "Australian Capital Territory",
-      },
-      {
-        name: "New South Wales",
-      },
-      {
-        name: "Victoria",
-      },
-      {
-        name: "Queensland",
-      },
-      {
-        name: "South Australia",
-      },
-      {
-        name: "Western Australia",
-      },
-      {
-        name: "Tasmania",
-      },
-      {
-        name: "Northern Territory",
-      },
-    ],
-  },
+  // aus: {
+  //   addressPlaceholder: "Street Address & Suburb",
+  //   cityPlaceholder: "City or Town",
+  //   codePlaceholder: "Post Code",
+  //   areaPlaceholder: "Select State or Territory",
+  //   areaOptions: [
+  //     {
+  //       name: "Australian Capital Territory",
+  //     },
+  //     {
+  //       name: "New South Wales",
+  //     },
+  //     {
+  //       name: "Victoria",
+  //     },
+  //     {
+  //       name: "Queensland",
+  //     },
+  //     {
+  //       name: "South Australia",
+  //     },
+  //     {
+  //       name: "Western Australia",
+  //     },
+  //     {
+  //       name: "Tasmania",
+  //     },
+  //     {
+  //       name: "Northern Territory",
+  //     },
+  //   ],
+  // },
 };

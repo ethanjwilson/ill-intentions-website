@@ -1,3 +1,5 @@
+import supportedCountries from "./locale/supportedCountries";
+
 export default {
   title: "Product Variant",
   name: "productVariant",
@@ -54,21 +56,37 @@ export default {
           title: "Small",
           name: "small",
           type: "number",
+          initialValue: 0,
           validation: (Rule) => Rule.required("You need a stock value").positive("Stock cannot be negative").integer("Stock must be an integer"),
         },
         {
           title: "Medium",
           name: "medium",
           type: "number",
+          initialValue: 0,
           validation: (Rule) => Rule.required("You need a stock value").positive("Stock cannot be negative").integer("Stock must be an integer"),
         },
         {
           title: "Large",
           name: "large",
           type: "number",
+          initialValue: 0,
           validation: (Rule) => Rule.required("You need a stock value").positive("Stock cannot be negative").integer("Stock must be an integer"),
         },
       ],
+    },
+    {
+      title: "Shipping Prices (in Cents)",
+      name: "shippingPrices",
+      type: "object",
+      group: "erp",
+      fields: supportedCountries.map((country) => ({
+        name: country.id,
+        title: country.title,
+        type: "number",
+        initialValue: 800, // $8.00
+        validation: (Rule) => Rule.required("You need a shipping price").positive("Shipping price cannot be negative").integer("Shipping price must be an integer"),
+      })),
     },
     {
       title: "SKU",

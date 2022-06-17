@@ -9,12 +9,14 @@ export default {
       title: "Client Secret",
       type: "string",
       validation: (Rule) => Rule.required(),
+      hidden: true,
     },
     {
       name: "paymentIntentId",
       title: "Payment Intent ID",
       type: "string",
       validation: (Rule) => Rule.required(),
+      hidden: true,
     },
     {
       name: "completed",
@@ -44,10 +46,11 @@ export default {
       validation: (Rule) => Rule.required(),
     },
     {
-      name: "salePriceSet",
-      title: "Sale Price Set",
+      name: "priceSet",
+      title: "Price Set",
       type: "boolean",
       validation: (Rule) => Rule.required(),
+      hidden: true,
     },
     {
       name: "productVariant",
@@ -65,7 +68,16 @@ export default {
   ],
   preview: {
     select: {
-      title: "completed",
+      sold: "completed",
+      price: "salePrice",
+      product: "product.title",
+    },
+    prepare(selection) {
+      const { sold, price, product } = selection;
+      return {
+        title: sold ? `Sold ${product}` : `Uncompleted Sale`,
+        subtitle: price ? `$${price / 100}` : "",
+      };
     },
   },
 };

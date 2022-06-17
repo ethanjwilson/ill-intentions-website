@@ -1,8 +1,8 @@
 export enum Countries {
-  nz = "nz",
-  jap = "jap",
-  usa = "usa",
-  sp = "sp",
+  nzl = "nzl",
+  // jap = "jap",
+  // usa = "usa",
+  // sp = "sp",
 }
 
 export enum Sizes {

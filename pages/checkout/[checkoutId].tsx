@@ -4,29 +4,22 @@ import { useNextSanityImage, UseNextSanityImageProps } from "next-sanity-image";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import useSWR from "swr";
 
 import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
-import { CheckoutSessions, Countries, Item } from "../../@types/db";
+import { Countries } from "../../@types/db";
 import CheckoutForm from "../../components/checkout/CheckoutForm";
 import CheckoutShell from "../../components/checkout/CheckoutShell";
 import PaymentForm from "../../components/checkout/PaymentForm";
 import checkoutFormSchema from "../../schemas/checkoutFormSchema";
-import { imageLoader } from "../../utils/imageLoader";
 import { client } from "../../utils/sanityClient";
 
 // http://localhost:3000/checkout/vOYBmzG0R4TianHAkusWsI
 
 const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
-
-interface CheckoutInterface {
-  itemId: string;
-  checkoutId: string;
-}
 
 type FormValues = {
   area: string;
@@ -44,7 +37,7 @@ const Checkout = ({ data }) => {
   const [priceSet, setPriceSet] = useState(data?.clientSecret ? true : false);
   const [clientSecret, setClientSecret] = useState(data?.clientSecret ?? "");
   const [email, setEmail] = useState(data?.customer?.email ?? "");
-  const { itemId, checkoutId, complete, size } = data;
+  const { _id: checkoutId, complete, size } = data;
 
   const item = { ...data.product, ...data.productVariant };
   const imageProps: UseNextSanityImageProps = useNextSanityImage(client, item.images[0]);
@@ -78,13 +71,12 @@ const Checkout = ({ data }) => {
           streetAddress: data.address,
           city: data.city,
           code: data.code,
-          area: data.area,
+          area: data.area.split("-")[0],
           country: data.country,
         }
       : false;
     axios
       .post("/api/stripe/update-checkout-session", {
-        itemId,
         checkoutId,
         customer: {
           firstName: data.firstName,
@@ -132,7 +124,7 @@ const Checkout = ({ data }) => {
                 <Text>Size: {size.toUpperCase()}</Text>
               </Stack>
             </Box>
-            <Image priority loader={imageLoader} src={`${item.images[0]}.webp`} alt={`Picture of ${item.name}`} width={500} height={500} />
+            <Image {...imageProps} priority placeholder="blur" alt={`Picture of ${item.title}`} layout="responsive"></Image>
           </Stack>
         </Stack>
       )}

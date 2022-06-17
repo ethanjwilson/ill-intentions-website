@@ -19,6 +19,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<{ checkoutId: st
     _type: "sale",
     size: size,
     priceSet: false,
+    completed: false,
     product: {
       _type: "reference",
       _ref: productId,

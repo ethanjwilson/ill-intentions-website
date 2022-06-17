@@ -1,10 +1,16 @@
-import { StripeCardElementChangeEvent } from "@stripe/stripe-js";
-import { useRouter } from "next/router";
-import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
-import { useEffect, useState, MouseEvent } from "react";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import axios from "axios";
-import { Dispatch, SetStateAction } from "react";
+import { useRouter } from "next/router";
+import {
+  Dispatch,
+  MouseEvent,
+  SetStateAction,
+  useEffect,
+  useState
+} from "react";
+
+import { Box, Button, Heading, Stack, Text } from "@chakra-ui/react";
+import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { StripeCardElementChangeEvent } from "@stripe/stripe-js";
 
 interface PaymentFormInterface {
   checkoutId: string;
