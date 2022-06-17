@@ -3,7 +3,7 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-import { Box, Button, Heading, Select, Stack } from "@chakra-ui/react";
+import { Box, Button, Heading, Select, Stack, Text } from "@chakra-ui/react";
 import { PortableText } from "@portabletext/react";
 
 import { Sizes } from "../../@types/db";
@@ -16,12 +16,12 @@ const ItemPage = ({ product }) => {
   const [variant, setVariant] = useState(product.variants[0]);
   const router = useRouter();
   const handleCheckout = async () => {
-    // if (Object.keys(variant.stock).includes(size)) {
-    //   const { checkoutId }: { checkoutId: string } = await axios
-    //     .post("/api/stripe/create-checkout-session", { productId: product._id, productVariantId: variant._id, size })
-    //     .then(({ data }) => data);
-    //   router.push(`/checkout/${checkoutId}`);
-    // }
+    if (product.checkoutAvailable && Object.keys(variant.stock).includes(size)) {
+      const { checkoutId }: { checkoutId: string } = await axios
+        .post("/api/stripe/create-checkout-session", { productId: product._id, productVariantId: variant._id, size })
+        .then(({ data }) => data);
+      router.push(`/checkout/${checkoutId}`);
+    }
   };
 
   return (
@@ -35,10 +35,15 @@ const ItemPage = ({ product }) => {
         <Stack maxW={500}>
           <LiquidImage images={variant.images} name={product.title} />
         </Stack>
-        <Stack mt="auto">
+        <Stack spacing={4} mt="auto">
           {/* @ts-ignore */}
           <PortableText value={product.body.en} components={ProductPortableTextComponents} />
-          <Select onChange={({ target }) => setSize(target.value as Sizes)} placeholder="Select Size">
+          {!product.checkoutAvailable && (
+            <Text fontWeight="bold" color="gray.600">
+              Checkout is currently unavailable. Please try again later.
+            </Text>
+          )}
+          <Select disabled={!product.checkoutAvailable} onChange={({ target }) => setSize(target.value as Sizes)} placeholder="Select Size">
             {Object.entries(variant.stock)
               .filter(([_, value]) => value > 0)
               .map(([key, value], idx) => (
@@ -47,7 +52,9 @@ const ItemPage = ({ product }) => {
                 </option>
               ))}
           </Select>
-          <Button onClick={handleCheckout}>Go To Checkout</Button>
+          <Button disabled={!product.checkoutAvailable} onClick={handleCheckout}>
+            Go To Checkout
+          </Button>
         </Stack>
       </Stack>
     </Box>
@@ -63,13 +70,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const product = data[0];
 
-  if (!product) {
+  if (!product || (product && !product.visible)) {
     console.log("Product unavailable or not found");
     context.res.writeHead(302, { location: "/" });
     context.res.end();
   }
-
-  console.log(product);
   return {
     props: { product },
   };

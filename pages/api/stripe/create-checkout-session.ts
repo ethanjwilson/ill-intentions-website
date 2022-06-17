@@ -13,7 +13,6 @@ type SessionData = {
 
 export default async (req: NextApiRequest, res: NextApiResponse<{ checkoutId: string }>) => {
   const { productId, productVariantId, size } = <SessionData>req["body"];
-  console.log(productId, productVariantId, size);
 
   const data = await client.create({
     _type: "sale",

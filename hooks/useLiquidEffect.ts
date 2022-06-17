@@ -10,7 +10,6 @@ const useLiquidEffect = (images: [any, any], displacementImage: string, imageRef
 
   useEffect(() => {
     if (imageRef && !liquidEffect) {
-      console.log("Creating liquid effect");
       const builder = imageUrlBuilder(client);
       const urlFor = (source) => {
         return builder.image(source);

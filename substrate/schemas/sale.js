@@ -1,7 +1,10 @@
+import { MdOutlineCreditCard } from "react-icons/md";
+
 export default {
   name: "sale",
   title: "Sale",
   type: "document",
+  icon: MdOutlineCreditCard,
   readOnly: true,
   fields: [
     {

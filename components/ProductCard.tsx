@@ -7,7 +7,6 @@ import { Box, Link, Text } from "@chakra-ui/react";
 import { client } from "../utils/sanityClient";
 
 const ProductCard = ({ product }) => {
-  console.log(product);
   const imageProps: UseNextSanityImageProps = useNextSanityImage(client, product.variants[0].images[0]);
   return (
     <Box bg="white" borderRadius="xl">

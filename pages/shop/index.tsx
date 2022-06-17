@@ -23,7 +23,7 @@ const Shop = ({ data }) => {
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  let data = await client.fetch(`*[_type == "product"]{
+  let data = await client.fetch(`*[_type == "product" && visible == true]{
     ...,
     variants[]->,
   }`);

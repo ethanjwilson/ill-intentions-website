@@ -26,6 +26,9 @@ export default createSchema({
     // in the studio.
     product,
     category,
+
+    customer,
+    sale,
     // When added to this list, object types can be used as
     // { type: 'typename' } in other document schemas
     blockContent,
@@ -33,8 +36,5 @@ export default createSchema({
     localeBlockContent,
     localeString,
     productVariant,
-
-    customer,
-    sale,
   ]),
 });

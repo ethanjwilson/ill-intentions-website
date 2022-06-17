@@ -1,7 +1,10 @@
+import { MdPersonOutline } from "react-icons/md";
+
 export default {
   name: "customer",
   title: "Customer",
   type: "document",
+  icon: MdPersonOutline,
   readOnly: true,
   fields: [
     {

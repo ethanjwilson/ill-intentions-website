@@ -3,6 +3,7 @@ import supportedCountries from "./locale/supportedCountries";
 export default {
   title: "Product Variant",
   name: "productVariant",
+  hidden: true,
   type: "document",
   groups: [
     {
