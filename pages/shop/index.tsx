@@ -23,7 +23,10 @@ const Shop = ({ data }) => {
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  let data = await client.fetch(`*[_type == "product"]`);
+  let data = await client.fetch(`*[_type == "product"]{
+    ...,
+    variants[]->,
+  }`);
   return {
     props: { data },
     revalidate: 10,
