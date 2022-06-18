@@ -8,7 +8,7 @@ const index: NextPage = () => {
     <Box>
       <Stack placeItems="center">
         <Stack my={8}>
-          <Heading fontSize="8xl" textAlign="center">
+          <Heading fontSize="7xl" textAlign="center">
             ill intentions
           </Heading>
         </Stack>
